@@ -47,26 +47,50 @@ Jenkins 관리 → 플러그인 관리에서 다음 플러그인을 설치하세
 
 #### 빌드 단계 추가
 
-**빌드 1: Maven 빌드**
+**빌드 1: 환경 변수 설정** (새로 추가!)
+- **Add build step** → **Execute Windows batch command**
+- 가장 첫 번째 단계로 추가
+
+**로컬 DB 사용 (권장 - 네트워크 오류 방지):**
+```
+set OPENAI_API_KEY=your-openai-api-key-here
+set DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+set DATABASE_USERNAME=root
+set DATABASE_PASSWORD=your_password
+```
+
+**원격 DB 사용 (192.168.75.207 접근 가능한 경우):**
+```
+set OPENAI_API_KEY=your-openai-api-key-here
+set DATABASE_URL=jdbc:mysql://192.168.75.207:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+set DATABASE_USERNAME=root
+set DATABASE_PASSWORD=1234
+```
+
+⚠️ **네트워크 오류 발생 시**: `localhost`를 사용하도록 변경하세요!
+
+**빌드 2: Maven 빌드**
 - **Add build step** → **Execute Windows batch command**
 ```
 cd always-svc
 call mvnw.cmd clean package -DskipTests
 ```
 
-**빌드 2: 서버 종료**
+**빌드 3: 서버 종료**
 - **Add build step** → **Execute Windows batch command**
 ```
 cd always-svc
 powershell -ExecutionPolicy Bypass -File jenkins-stop.ps1
 ```
 
-**빌드 3: 서버 시작**
+**빌드 4: 서버 시작**
 - **Add build step** → **Execute Windows batch command**
 ```
 cd always-svc
 powershell -ExecutionPolicy Bypass -File jenkins-restart.ps1 -Profile mysql
 ```
+
+⚠️ **중요**: 환경 변수 설정 단계는 **가장 첫 번째** 빌드 단계여야 합니다!
 
 ## 4. 수동 실행 스크립트 방식 (가장 간단)
 
