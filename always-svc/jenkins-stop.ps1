@@ -8,11 +8,11 @@ $port = 8089
 # PID 파일이 있으면 사용
 $pidFile = Join-Path $scriptPath "always-server.pid"
 if (Test-Path $pidFile) {
-    $pid = Get-Content $pidFile
-    $process = Get-Process -Id $pid -ErrorAction SilentlyContinue
+    $processId = Get-Content $pidFile
+    $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
     if ($process) {
-        Write-Host "프로세스 종료: PID $pid" -ForegroundColor Yellow
-        Stop-Process -Id $pid -Force
+        Write-Host "프로세스 종료: PID $processId" -ForegroundColor Yellow
+        Stop-Process -Id $processId -Force
         Remove-Item $pidFile -Force
         Write-Host "서버 종료 완료" -ForegroundColor Green
         exit 0
@@ -24,11 +24,11 @@ Write-Host "포트 $port 사용 중인 프로세스 검색 중..." -ForegroundCo
 $processes = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
 
 if ($processes) {
-    foreach ($pid in $processes) {
-        $process = Get-Process -Id $pid -ErrorAction SilentlyContinue
+    foreach ($processId in $processes) {
+        $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($process -and $process.ProcessName -eq "java") {
-            Write-Host "프로세스 종료: PID $pid ($($process.ProcessName))" -ForegroundColor Yellow
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            Write-Host "프로세스 종료: PID $processId ($($process.ProcessName))" -ForegroundColor Yellow
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
         }
     }
     Write-Host "서버 종료 완료" -ForegroundColor Green

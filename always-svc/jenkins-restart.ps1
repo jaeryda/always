@@ -33,11 +33,11 @@ $port = 8089
 $processes = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
 
 if ($processes) {
-    foreach ($pid in $processes) {
-        $process = Get-Process -Id $pid -ErrorAction SilentlyContinue
+    foreach ($processId in $processes) {
+        $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($process -and $process.ProcessName -eq "java") {
-            Write-Host "프로세스 종료: PID $pid ($($process.ProcessName))" -ForegroundColor Yellow
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            Write-Host "프로세스 종료: PID $processId ($($process.ProcessName))" -ForegroundColor Yellow
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 2
         }
     }
@@ -66,6 +66,12 @@ if (-not $jarFile) {
 }
 
 $env:SPRING_PROFILES_ACTIVE = $Profile
+
+# OpenAI API 키 환경 변수 확인 (Jenkins에서 설정된 경우 사용)
+if (-not $env:OPENAI_API_KEY) {
+    Write-Host "⚠️  OPENAI_API_KEY 환경 변수가 설정되지 않았습니다." -ForegroundColor Yellow
+    Write-Host "   OpenAI 기능을 사용하려면 Jenkins Job에서 환경 변수를 설정하세요." -ForegroundColor Yellow
+}
 
 # 백그라운드에서 실행
 $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
