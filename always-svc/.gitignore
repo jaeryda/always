@@ -1,7 +1,8 @@
 # Maven
 target/
-.mvn/wrapper/maven-wrapper.jar
-.mvn/wrapper/maven-wrapper.properties
+# Maven Wrapper files should be committed (required for Jenkins builds)
+# .mvn/wrapper/maven-wrapper.jar
+# .mvn/wrapper/maven-wrapper.properties
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -20,6 +21,7 @@ target/
 
 # Spring Boot
 *.jar
+!**/.mvn/wrapper/maven-wrapper.jar
 *.war
 *.ear
 
