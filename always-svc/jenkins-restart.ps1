@@ -109,14 +109,21 @@ if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
 
-# 백그라운드에서 실행 (Start-Process 사용 - 리다이렉션 없이 실행)
+# 백그라운드에서 실행 (Start-Process 사용)
 Write-Host "JAR 파일 실행 중: $($jarFile.FullName)" -ForegroundColor Gray
 
-# Start-Process를 사용하여 백그라운드로 실행 (로그는 Spring Boot의 파일 로깅 설정 사용)
+# 표준 출력과 표준 오류를 별도 파일로 리다이렉트 (Start-Process 제한사항)
+$stdoutFile = Join-Path $logDir "stdout.log"
+$stderrFile = Join-Path $logDir "stderr.log"
+
+# Start-Process를 사용하여 백그라운드로 실행
+# 주의: RedirectStandardOutput과 RedirectStandardError는 다른 파일이어야 함
 $process = Start-Process -FilePath "java" `
     -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
     -WorkingDirectory $scriptPath `
     -WindowStyle Hidden `
+    -RedirectStandardOutput $stdoutFile `
+    -RedirectStandardError $stderrFile `
     -PassThru
 
 # 프로세스 시작 대기 및 상태 확인
@@ -134,10 +141,23 @@ while ($elapsed -lt $maxWait) {
     $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
     if (-not $processCheck) {
         Write-Host "❌ 서버 프로세스가 종료되었습니다! (${elapsed}초 후)" -ForegroundColor Red
-        Write-Host "로그 파일을 확인하세요: $logFile" -ForegroundColor Yellow
+        Write-Host "`n표준 출력 로그 ($stdoutFile):" -ForegroundColor Yellow
+        if (Test-Path $stdoutFile) {
+            Get-Content $stdoutFile -Tail 50
+        } else {
+            Write-Host "  (로그 파일이 없습니다)" -ForegroundColor Gray
+        }
+        Write-Host "`n표준 오류 로그 ($stderrFile):" -ForegroundColor Yellow
+        if (Test-Path $stderrFile) {
+            Get-Content $stderrFile -Tail 50
+        } else {
+            Write-Host "  (로그 파일이 없습니다)" -ForegroundColor Gray
+        }
+        Write-Host "`n애플리케이션 로그 ($logFile):" -ForegroundColor Yellow
         if (Test-Path $logFile) {
-            Write-Host "`n최근 로그:" -ForegroundColor Yellow
             Get-Content $logFile -Tail 30
+        } else {
+            Write-Host "  (로그 파일이 없습니다)" -ForegroundColor Gray
         }
         exit 1
     }
@@ -166,9 +186,16 @@ if ($isRunning) {
     $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
     if ($processCheck) {
         Write-Host "⚠️  서버 프로세스는 실행 중이지만 포트 $port 가 열리지 않았습니다." -ForegroundColor Yellow
-        Write-Host "로그 파일을 확인하세요: $logFile" -ForegroundColor Yellow
+        Write-Host "`n표준 출력 로그 ($stdoutFile):" -ForegroundColor Yellow
+        if (Test-Path $stdoutFile) {
+            Get-Content $stdoutFile -Tail 30
+        }
+        Write-Host "`n표준 오류 로그 ($stderrFile):" -ForegroundColor Yellow
+        if (Test-Path $stderrFile) {
+            Get-Content $stderrFile -Tail 30
+        }
+        Write-Host "`n애플리케이션 로그 ($logFile):" -ForegroundColor Yellow
         if (Test-Path $logFile) {
-            Write-Host "`n최근 로그:" -ForegroundColor Yellow
             Get-Content $logFile -Tail 30
         }
         # 프로세스는 실행 중이므로 성공으로 처리 (초기화가 늦을 수 있음)

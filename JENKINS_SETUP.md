@@ -54,7 +54,7 @@ Jenkins 관리 → 플러그인 관리에서 다음 플러그인을 설치하세
 **로컬 DB 사용 (권장 - 네트워크 오류 방지):**
 ```
 set OPENAI_API_KEY=your-openai-api-key-here
-set DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+set "DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
 set DATABASE_USERNAME=root
 set DATABASE_PASSWORD=your_password
 ```
@@ -62,10 +62,12 @@ set DATABASE_PASSWORD=your_password
 **원격 DB 사용 (192.168.75.207 접근 가능한 경우):**
 ```
 set OPENAI_API_KEY=your-openai-api-key-here
-set DATABASE_URL=jdbc:mysql://192.168.75.207:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+set "DATABASE_URL=jdbc:mysql://192.168.75.207:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
 set DATABASE_USERNAME=root
 set DATABASE_PASSWORD=1234
 ```
+
+⚠️ **중요**: `DATABASE_URL`은 따옴표(`"`)로 감싸야 합니다! `&` 문자가 배치 파일에서 명령어 구분자로 인식되는 것을 방지하기 위함입니다.
 
 ⚠️ **네트워크 오류 발생 시**: `localhost`를 사용하도록 변경하세요!
 
