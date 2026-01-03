@@ -124,7 +124,7 @@ $stderrFile = Join-Path $logDir "stderr.log"
 $process = Start-Process -FilePath "java" `
     -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
     -WorkingDirectory $scriptPath `
-    -WindowStyle Hidden `
+    -NoNewWindow `
     -RedirectStandardOutput $stdoutFile `
     -RedirectStandardError $stderrFile `
     -PassThru
