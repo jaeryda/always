@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.always.mapper.CategoryMapper">
+
+    <resultMap id="CategoryResultMap" type="com.always.entity.Category">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="icon" column="icon"/>
+        <result property="color" column="color"/>
+        <result property="displayOrder" column="display_order"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 사용자별 전체 조회 -->
+    <select id="findAllByUserId" parameterType="Long" resultMap="CategoryResultMap">
+        SELECT id, user_id, name, type, icon, color, display_order, created_at, updated_at
+        FROM categories
+        WHERE user_id = #{userId}
+        ORDER BY display_order ASC, name ASC
+    </select>
+
+    <!-- 타입별 조회 -->
+    <select id="findByUserIdAndType" resultMap="CategoryResultMap">
+        SELECT id, user_id, name, type, icon, color, display_order, created_at, updated_at
+        FROM categories
+        WHERE user_id = #{userId} AND type = #{type}
+        ORDER BY display_order ASC, name ASC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" parameterType="Long" resultMap="CategoryResultMap">
+        SELECT id, user_id, name, type, icon, color, display_order, created_at, updated_at
+        FROM categories
+        WHERE id = #{id}
+    </select>
+
+    <!-- 사용자 ID와 카테고리 ID로 조회 -->
+    <select id="findByUserIdAndId" resultMap="CategoryResultMap">
+        SELECT id, user_id, name, type, icon, color, display_order, created_at, updated_at
+        FROM categories
+        WHERE user_id = #{userId} AND id = #{id}
+    </select>
+
+    <!-- 카테고리명으로 조회 (중복 체크용) -->
+    <select id="findByUserIdAndNameAndType" resultMap="CategoryResultMap">
+        SELECT id, user_id, name, type, icon, color, display_order, created_at, updated_at
+        FROM categories
+        WHERE user_id = #{userId} AND name = #{name} AND type = #{type}
+        LIMIT 1
+    </select>
+
+    <!-- 저장 -->
+    <insert id="insert" parameterType="com.always.entity.Category" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO categories (user_id, name, type, icon, color, display_order, created_at, updated_at)
+        VALUES (#{userId}, #{name}, #{type}, #{icon}, #{color}, #{displayOrder}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 업데이트 -->
+    <update id="update" parameterType="com.always.entity.Category">
+        UPDATE categories
+        SET name = #{name},
+            type = #{type},
+            icon = #{icon},
+            color = #{color},
+            display_order = #{displayOrder},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM categories WHERE id = #{id}
+    </delete>
+
+    <!-- 사용자별 카테고리 개수 -->
+    <select id="countByUserId" parameterType="Long" resultType="int">
+        SELECT COUNT(*) FROM categories WHERE user_id = #{userId}
+    </select>
+
+</mapper>
+

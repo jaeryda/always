@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.always.mapper.MenuMapper">
+
+    <resultMap id="MenuResultMap" type="com.always.entity.Menu">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="path" column="path"/>
+        <result property="icon" column="icon"/>
+        <result property="displayOrder" column="display_order"/>
+        <result property="visible" column="visible"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 전체 조회 (순서대로) -->
+    <select id="findAllOrderByDisplayOrder" resultMap="MenuResultMap">
+        SELECT id, name, path, icon, display_order, visible, created_at, updated_at
+        FROM menus
+        ORDER BY display_order ASC
+    </select>
+
+    <!-- 표시 가능한 메뉴 조회 (순서대로) -->
+    <select id="findVisibleMenusOrderByDisplayOrder" resultMap="MenuResultMap">
+        SELECT id, name, path, icon, display_order, visible, created_at, updated_at
+        FROM menus
+        WHERE visible = true
+        ORDER BY display_order ASC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" parameterType="Long" resultMap="MenuResultMap">
+        SELECT id, name, path, icon, display_order, visible, created_at, updated_at
+        FROM menus
+        WHERE id = #{id}
+    </select>
+
+    <!-- 저장 -->
+    <insert id="insert" parameterType="com.always.entity.Menu" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO menus (name, path, icon, display_order, visible, created_at, updated_at)
+        VALUES (#{name}, #{path}, #{icon}, #{displayOrder}, #{visible}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 업데이트 -->
+    <update id="update" parameterType="com.always.entity.Menu">
+        UPDATE menus
+        SET name = #{name},
+            path = #{path},
+            icon = #{icon},
+            display_order = #{displayOrder},
+            visible = #{visible},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM menus WHERE id = #{id}
+    </delete>
+
+    <!-- 존재 여부 확인 -->
+    <select id="existsById" parameterType="Long" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM menus WHERE id = #{id}
+    </select>
+
+    <!-- 전체 개수 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM menus
+    </select>
+
+</mapper>
+

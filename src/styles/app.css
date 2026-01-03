@@ -1,0 +1,131 @@
+/* ============================================
+   App 컴포넌트 스타일
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+  height: auto !important;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.app-header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.app-logo {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  padding: 1rem 0;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  user-select: none;
+}
+
+.app-logo:hover {
+  opacity: 0.8;
+}
+
+.nav-menu {
+  background: transparent;
+  border-bottom: none;
+}
+
+.nav-menu .el-menu-item {
+  color: rgba(255, 255, 255, 0.8);
+  border-bottom: 2px solid transparent;
+}
+
+.nav-menu .el-menu-item:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-menu .el-menu-item.is-active {
+  color: white;
+  border-bottom-color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-menu .el-menu-item.is-disabled {
+  opacity: 0.8;
+  cursor: default;
+}
+
+/* 모바일 메뉴 스타일 */
+@media (max-width: 768px) {
+  .nav-menu.el-menu--horizontal {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  .nav-menu.el-menu--horizontal::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  /* 모바일에서 hover 효과 완전 제거 - 클릭 기반으로만 동작 */
+  .nav-menu .el-sub-menu:hover > .el-sub-menu__title,
+  .nav-menu .el-menu-item:hover {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  /* 클릭/터치로 열린 sub-menu만 활성화 스타일 적용 */
+  .nav-menu .el-sub-menu.is-opened > .el-sub-menu__title {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+  }
+  
+  /* 모바일에서 모든 hover 관련 이벤트 비활성화 */
+  .nav-menu * {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* overflow 메뉴 popper 강제로 숨기기 (라우트 변경 시) */
+  .el-popper.el-menu--horizontal[style*="display: none"],
+  .el-popper.el-menu--horizontal[style*="visibility: hidden"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
+
+.app-main {
+  min-height: calc(100vh - 60px);
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: visible !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+

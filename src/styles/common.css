@@ -1,0 +1,95 @@
+/* ============================================
+   공통 스타일 (Common Styles)
+   ============================================ */
+
+/* 페이지 레이아웃 */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.page-main {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  padding-top: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .page-main {
+    padding: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .el-main {
+    padding: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+}
+
+/* 카드 헤더 */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #303133;
+}
+
+.card-header-icon {
+  font-size: 1.3rem;
+  color: #409eff;
+}
+
+/* Element Plus 카드 커스터마이징 (전역 스타일) */
+.el-card {
+  --card-hover-lift: 0px; /* 카드 hover 시 올라가는 높이 (0으로 설정하면 애니메이션 비활성화) */
+  border-radius: 12px;
+  border: 1px solid #ebeef5;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.el-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(var(--card-hover-lift));
+}
+
+.el-card__header {
+  padding: 20px;
+  border-bottom: 1px solid #ebeef5;
+  background-color: #fafbfc;
+}
+
+.el-card__body {
+  padding: 24px;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .page-main {
+    padding: 2rem 2.5%;
+    padding-top: 2rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .el-main {
+    padding: 2rem 2.5% !important;
+    padding-top: 2rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: visible !important;
+  }
+}
+

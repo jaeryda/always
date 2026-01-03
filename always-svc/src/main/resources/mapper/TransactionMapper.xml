@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.always.mapper.TransactionMapper">
+
+    <resultMap id="TransactionResultMap" type="com.always.entity.Transaction">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="amount" column="amount"/>
+        <result property="type" column="type"/>
+        <result property="description" column="description"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="category" javaType="com.always.entity.Category">
+            <id property="id" column="category_id"/>
+            <result property="name" column="category_name"/>
+            <result property="type" column="category_type"/>
+            <result property="icon" column="category_icon"/>
+            <result property="color" column="category_color"/>
+        </association>
+    </resultMap>
+
+    <!-- 사용자별 전체 조회 (최신순) -->
+    <select id="findAllByUserId" parameterType="Long" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = #{userId}
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+    </select>
+
+    <!-- ID로 조회 -->
+    <select id="findById" parameterType="Long" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.id = #{id}
+    </select>
+
+    <!-- 사용자 ID와 거래 ID로 조회 -->
+    <select id="findByUserIdAndId" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = #{userId} AND t.id = #{id}
+    </select>
+
+    <!-- 날짜 범위로 조회 -->
+    <select id="findByUserIdAndDateRange" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = #{userId}
+          AND t.transaction_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+    </select>
+
+    <!-- 월별 조회 -->
+    <select id="findByUserIdAndYearMonth" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = #{userId}
+          AND YEAR(t.transaction_date) = #{year}
+          AND MONTH(t.transaction_date) = #{month}
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+    </select>
+
+    <!-- 카테고리별 조회 -->
+    <select id="findByUserIdAndCategoryId" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = #{userId} AND t.category_id = #{categoryId}
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+    </select>
+
+    <!-- 타입별 조회 -->
+    <select id="findByUserIdAndType" resultMap="TransactionResultMap">
+        SELECT 
+            t.id,
+            t.user_id,
+            t.category_id,
+            t.amount,
+            t.type,
+            t.description,
+            t.transaction_date,
+            t.created_at,
+            t.updated_at,
+            c.name AS category_name,
+            c.type AS category_type,
+            c.icon AS category_icon,
+            c.color AS category_color
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.user_id = #{userId} AND t.type = #{type}
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+    </select>
+
+    <!-- 저장 -->
+    <insert id="insert" parameterType="com.always.entity.Transaction" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO transactions (user_id, category_id, amount, type, description, transaction_date, created_at, updated_at)
+        VALUES (#{userId}, #{categoryId, jdbcType=BIGINT}, #{amount}, #{type}, #{description}, #{transactionDate}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 업데이트 -->
+    <update id="update" parameterType="com.always.entity.Transaction">
+        UPDATE transactions
+        SET category_id = #{categoryId, jdbcType=BIGINT},
+            amount = #{amount},
+            type = #{type},
+            description = #{description},
+            transaction_date = #{transactionDate},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM transactions WHERE id = #{id}
+    </delete>
+
+    <!-- 사용자별 거래 개수 -->
+    <select id="countByUserId" parameterType="Long" resultType="int">
+        SELECT COUNT(*) FROM transactions WHERE user_id = #{userId}
+    </select>
+
+    <!-- 월별 합계 (수입/지출) -->
+    <select id="sumByUserIdAndTypeAndYearMonth" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE user_id = #{userId}
+          AND type = #{type}
+          AND YEAR(transaction_date) = #{year}
+          AND MONTH(transaction_date) = #{month}
+    </select>
+
+    <!-- 카테고리별 합계 -->
+    <select id="sumByUserIdAndCategoryIdAndYearMonth" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions
+        WHERE user_id = #{userId}
+          AND category_id = #{categoryId}
+          AND YEAR(transaction_date) = #{year}
+          AND MONTH(transaction_date) = #{month}
+    </select>
+
+</mapper>
+
