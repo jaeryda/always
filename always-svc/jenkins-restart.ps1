@@ -76,7 +76,10 @@ $jarFile = $jarFiles | Where-Object { $_.Name -notlike "*-sources.jar" -and $_.N
 if (-not $jarFile) {
     Write-Host "❌ 실행 가능한 JAR 파일을 찾을 수 없습니다." -ForegroundColor Red
     Write-Host "target 디렉토리 내용:" -ForegroundColor Yellow
-    Get-ChildItem -Path $targetPath | ForEach-Object { Write-Host "  - $($_.Name) ($($_.PSIsContainer ? 'Directory' : 'File'))" -ForegroundColor Yellow }
+    Get-ChildItem -Path $targetPath | ForEach-Object {
+        $type = if ($_.PSIsContainer) { 'Directory' } else { 'File' }
+        Write-Host "  - $($_.Name) ($type)" -ForegroundColor Yellow
+    }
     exit 1
 }
 
