@@ -120,9 +120,32 @@ powershell -ExecutionPolicy Bypass -File jenkins-restart.ps1 -Profile mysql
 
 ## 6. 로그 확인
 
-서버 실행 후 로그는 다음 위치에서 확인할 수 있습니다:
-- 콘솔: Jenkins 빌드 콘솔 출력
-- 파일: `always-svc/logs/application.log` (생성되는 경우)
+### Jenkins 빌드 실시간 로그 확인 ⭐
+
+Jenkins에서 빌드를 실행하면 **실시간으로 로그를 확인**할 수 있습니다:
+
+1. **빌드 실행 중 로그 보기**
+   - Jenkins Job 페이지에서 **"Build Now"** 클릭
+   - 빌드가 시작되면 왼쪽 메뉴 또는 빌드 히스토리에서 **진행 중인 빌드 번호** 클릭
+   - 또는 **"Console Output"** 링크 클릭
+   - 실시간으로 빌드 진행 상황과 로그가 표시됩니다
+
+2. **완료된 빌드 로그 보기**
+   - Job 페이지에서 **왼쪽 메뉴 → "빌드 히스토리(Build History)"**
+   - 빌드 번호 클릭 → **"Console Output"** 클릭
+   - 또는 빌드 번호 옆의 **콘솔 아이콘** 클릭
+
+3. **로그 새로고침**
+   - Console Output 페이지에서 **"Poll Log"** 버튼 클릭
+   - 또는 자동 새로고침이 활성화되어 있으면 자동으로 업데이트됩니다
+
+### 서버 실행 후 애플리케이션 로그
+
+Spring Boot 서버가 백그라운드로 실행되므로, 서버 로그는 다음 위치에서 확인:
+
+- **Jenkins Console Output**: 빌드 초기 시작 로그만 확인 가능
+- **파일 로그**: `C:\Users\jy_kim\.jenkins\workspace\always-deploy\always-svc\logs\application.log` (생성되는 경우)
+- **직접 확인**: 서버 프로세스의 표준 출력을 캡처하려면 스크립트 수정 필요
 
 ## 7. 환경 변수 설정 (필수)
 
