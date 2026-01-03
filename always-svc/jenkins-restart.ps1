@@ -1,34 +1,34 @@
-# Jenkins용 Spring Boot 재기동 스크립트
-# 기존 프로세스를 종료하고 새로 시작합니다
+# Jenkins Spring Boot Restart Script
+# Stops existing process and starts a new one
 
 param(
     [string]$Profile = "mysql"
 )
 
-Write-Host "=== Always 서버 재기동 시작 ===" -ForegroundColor Cyan
+Write-Host "=== Always Server Restart Started ===" -ForegroundColor Cyan
 
-# 1. JAVA_HOME 설정
+# 1. JAVA_HOME Setup
 if (-not $env:JAVA_HOME) {
-    Write-Host "JAVA_HOME을 찾는 중..." -ForegroundColor Yellow
+    Write-Host "Finding JAVA_HOME..." -ForegroundColor Yellow
     try {
         $javaPath = (Get-Command java -ErrorAction Stop).Source
         $javaBinDir = Split-Path $javaPath -Parent
         $javaHome = Split-Path $javaBinDir -Parent
         $env:JAVA_HOME = $javaHome
-        Write-Host "JAVA_HOME 설정됨: $javaHome" -ForegroundColor Green
+        Write-Host "JAVA_HOME set: $javaHome" -ForegroundColor Green
     } catch {
-        Write-Host "❌ Java를 찾을 수 없습니다." -ForegroundColor Red
+        Write-Host "ERROR: Java not found." -ForegroundColor Red
         exit 1
     }
 }
 
-# 2. 프로젝트 디렉토리로 이동
+# 2. Change to project directory
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptPath
-Write-Host "작업 디렉토리: $scriptPath" -ForegroundColor Green
+Write-Host "Working directory: $scriptPath" -ForegroundColor Green
 
-# 3. 기존 프로세스 종료 (포트 8089 사용 중인 Java 프로세스)
-Write-Host "`n기존 프로세스 종료 중..." -ForegroundColor Yellow
+# 3. Stop existing process (Java process using port 8089)
+Write-Host "`nStopping existing process..." -ForegroundColor Yellow
 $port = 8089
 $processes = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
 
@@ -36,46 +36,46 @@ if ($processes) {
     foreach ($processId in $processes) {
         $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($process -and $process.ProcessName -eq "java") {
-            Write-Host "프로세스 종료: PID $processId ($($process.ProcessName))" -ForegroundColor Yellow
+            Write-Host "Stopping process: PID $processId ($($process.ProcessName))" -ForegroundColor Yellow
             Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 2
         }
     }
-    Write-Host "기존 프로세스 종료 완료" -ForegroundColor Green
+    Write-Host "Existing process stopped" -ForegroundColor Green
 } else {
-    Write-Host "실행 중인 프로세스가 없습니다." -ForegroundColor Green
+    Write-Host "No running process found." -ForegroundColor Green
 }
 
-# 4. Maven 빌드
-Write-Host "`nMaven 빌드 시작..." -ForegroundColor Cyan
-Write-Host "현재 디렉토리: $(Get-Location)" -ForegroundColor Gray
+# 4. Maven Build
+Write-Host "`nStarting Maven build..." -ForegroundColor Cyan
+Write-Host "Current directory: $(Get-Location)" -ForegroundColor Gray
 & .\mvnw.cmd clean package -DskipTests
 $buildExitCode = $LASTEXITCODE
 if ($buildExitCode -ne 0) {
-    Write-Host "❌ 빌드 실패! Exit Code: $buildExitCode" -ForegroundColor Red
+    Write-Host "ERROR: Build failed! Exit Code: $buildExitCode" -ForegroundColor Red
     exit 1
 }
-Write-Host "빌드 완료" -ForegroundColor Green
+Write-Host "Build completed" -ForegroundColor Green
 
-# 5. JAR 파일 찾기
-Write-Host "`nJAR 파일 검색 중..." -ForegroundColor Cyan
+# 5. Find JAR file
+Write-Host "`nSearching for JAR file..." -ForegroundColor Cyan
 $targetPath = Join-Path $scriptPath "target"
-Write-Host "target 디렉토리: $targetPath" -ForegroundColor Gray
+Write-Host "target directory: $targetPath" -ForegroundColor Gray
 
 if (-not (Test-Path $targetPath)) {
-    Write-Host "❌ target 디렉토리가 존재하지 않습니다." -ForegroundColor Red
+    Write-Host "ERROR: target directory does not exist." -ForegroundColor Red
     exit 1
 }
 
 $jarFiles = Get-ChildItem -Path $targetPath -Filter "*.jar" -ErrorAction SilentlyContinue
-Write-Host "발견된 JAR 파일:" -ForegroundColor Gray
+Write-Host "Found JAR files:" -ForegroundColor Gray
 $jarFiles | ForEach-Object { Write-Host "  - $($_.Name)" -ForegroundColor Gray }
 
 $jarFile = $jarFiles | Where-Object { $_.Name -notlike "*-sources.jar" -and $_.Name -notlike "*-javadoc.jar" } | Select-Object -First 1
 
 if (-not $jarFile) {
-    Write-Host "❌ 실행 가능한 JAR 파일을 찾을 수 없습니다." -ForegroundColor Red
-    Write-Host "target 디렉토리 내용:" -ForegroundColor Yellow
+    Write-Host "ERROR: Executable JAR file not found." -ForegroundColor Red
+    Write-Host "target directory contents:" -ForegroundColor Yellow
     Get-ChildItem -Path $targetPath | ForEach-Object {
         $type = if ($_.PSIsContainer) { 'Directory' } else { 'File' }
         Write-Host "  - $($_.Name) ($type)" -ForegroundColor Yellow
@@ -83,44 +83,44 @@ if (-not $jarFile) {
     exit 1
 }
 
-Write-Host "JAR 파일 찾음: $($jarFile.Name)" -ForegroundColor Green
+Write-Host "JAR file found: $($jarFile.Name)" -ForegroundColor Green
 
-# 6. JAR 파일 실행 (백그라운드)
-Write-Host "`n서버 시작 중..." -ForegroundColor Cyan
+# 6. Start JAR file (background)
+Write-Host "`nStarting server..." -ForegroundColor Cyan
 
 $env:SPRING_PROFILES_ACTIVE = $Profile
 
-# 환경 변수 확인 및 안내
+# Check environment variables
 if (-not $env:OPENAI_API_KEY) {
-    Write-Host "⚠️  OPENAI_API_KEY 환경 변수가 설정되지 않았습니다." -ForegroundColor Yellow
-    Write-Host "   OpenAI 기능을 사용하려면 Jenkins Job에서 환경 변수를 설정하세요." -ForegroundColor Yellow
+    Write-Host "WARNING: OPENAI_API_KEY environment variable not set." -ForegroundColor Yellow
+    Write-Host "   Set environment variable in Jenkins Job to use OpenAI features." -ForegroundColor Yellow
 }
 
 if ($env:DATABASE_URL) {
-    Write-Host "📌 DATABASE_URL 환경 변수 사용: $env:DATABASE_URL" -ForegroundColor Cyan
+    Write-Host "Using DATABASE_URL environment variable: $env:DATABASE_URL" -ForegroundColor Cyan
 } else {
-    Write-Host "📌 기본 DATABASE_URL 사용 (application-mysql.properties)" -ForegroundColor Gray
+    Write-Host "Using default DATABASE_URL (application-mysql.properties)" -ForegroundColor Gray
 }
 
-# 로그 파일 디렉토리 생성
+# Create log directory
 $logFile = Join-Path $scriptPath "logs\application.log"
 $logDir = Split-Path $logFile -Parent
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
 
-# 백그라운드에서 실행 (Start-Process 사용)
-Write-Host "JAR 파일 실행 중: $($jarFile.FullName)" -ForegroundColor Gray
+# Start in background (using Start-Process)
+Write-Host "Executing JAR file: $($jarFile.FullName)" -ForegroundColor Gray
 
-# 표준 출력과 표준 오류를 별도 파일로 리다이렉트
+# Redirect stdout and stderr to separate files
 $stdoutFile = Join-Path $logDir "stdout.log"
 $stderrFile = Join-Path $logDir "stderr.log"
 
-# Start-Process를 사용하여 백그라운드로 실행
-# -WindowStyle Hidden: 창을 숨김 (백그라운드 실행)
-# -RedirectStandardOutput/RedirectStandardError: 로그를 파일로 리다이렉트
-# -PassThru: 프로세스 객체 반환
-# 주의: Jenkins 빌드가 종료되어도 프로세스가 계속 실행되도록 별도 프로세스로 실행
+# Start-Process to run in background
+# -WindowStyle Hidden: Hide window (background execution)
+# -RedirectStandardOutput/RedirectStandardError: Redirect logs to files
+# -PassThru: Return process object
+# Note: Process runs as separate process to continue after Jenkins build ends
 $process = Start-Process -FilePath "java" `
     -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
     -WorkingDirectory $scriptPath `
@@ -129,10 +129,10 @@ $process = Start-Process -FilePath "java" `
     -RedirectStandardError $stderrFile `
     -PassThru
 
-# 프로세스 시작 대기 및 상태 확인
-Write-Host "서버 초기화 대기 중..." -ForegroundColor Gray
-$maxWait = 30  # 최대 30초 대기
-$waitInterval = 2  # 2초마다 확인
+# Wait for process start and check status
+Write-Host "Waiting for server initialization..." -ForegroundColor Gray
+$maxWait = 30  # Maximum 30 seconds wait
+$waitInterval = 2  # Check every 2 seconds
 $elapsed = 0
 $isRunning = $false
 
@@ -140,85 +140,88 @@ while ($elapsed -lt $maxWait) {
     Start-Sleep -Seconds $waitInterval
     $elapsed += $waitInterval
     
-    # 프로세스가 여전히 실행 중인지 확인
+    # Check if process is still running
     $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
     if (-not $processCheck) {
-        Write-Host "❌ 서버 프로세스가 종료되었습니다! (${elapsed}초 후)" -ForegroundColor Red
-        Write-Host "`n표준 출력 로그 ($stdoutFile):" -ForegroundColor Yellow
+        Write-Host "ERROR: Server process terminated! (after ${elapsed}s)" -ForegroundColor Red
+        Write-Host "`nStandard output log ($stdoutFile):" -ForegroundColor Yellow
         if (Test-Path $stdoutFile) {
             Get-Content $stdoutFile -Tail 50
         } else {
-            Write-Host "  (로그 파일이 없습니다)" -ForegroundColor Gray
+            Write-Host "  (Log file not found)" -ForegroundColor Gray
         }
-        Write-Host "`n표준 오류 로그 ($stderrFile):" -ForegroundColor Yellow
+        Write-Host "`nStandard error log ($stderrFile):" -ForegroundColor Yellow
         if (Test-Path $stderrFile) {
             Get-Content $stderrFile -Tail 50
         } else {
-            Write-Host "  (로그 파일이 없습니다)" -ForegroundColor Gray
+            Write-Host "  (Log file not found)" -ForegroundColor Gray
         }
-        Write-Host "`n애플리케이션 로그 ($logFile):" -ForegroundColor Yellow
+        Write-Host "`nApplication log ($logFile):" -ForegroundColor Yellow
         if (Test-Path $logFile) {
             Get-Content $logFile -Tail 30
         } else {
-            Write-Host "  (로그 파일이 없습니다)" -ForegroundColor Gray
+            Write-Host "  (Log file not found)" -ForegroundColor Gray
         }
         exit 1
     }
     
-    # 포트가 열렸는지 확인 (서버가 실제로 준비되었는지)
+    # Check if port is open (server is actually ready)
     $portCheck = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
     if ($portCheck) {
         $isRunning = $true
-        Write-Host "✅ 서버가 정상적으로 시작되었습니다! (${elapsed}초 소요)" -ForegroundColor Green
+        Write-Host "SUCCESS: Server started successfully! (took ${elapsed}s)" -ForegroundColor Green
         break
     }
     
-    Write-Host "  대기 중... (${elapsed}/${maxWait}초)" -ForegroundColor Gray
+    Write-Host "  Waiting... (${elapsed}/${maxWait}s)" -ForegroundColor Gray
 }
 
 if ($isRunning) {
-    # 포트를 사용하는 프로세스 ID 가져오기
+    # Get process ID using the port
     $portProcess = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
     if ($portProcess) {
         $actualProcessId = $portProcess[0]
-        Write-Host "서버가 시작되었습니다. PID: $actualProcessId" -ForegroundColor Green
-        Write-Host "포트: $port" -ForegroundColor Green
-        Write-Host "프로파일: $Profile" -ForegroundColor Green
-        Write-Host "`n로그 확인: $logFile (Spring Boot 로그 파일 설정에 따라 생성됨)" -ForegroundColor Yellow
+        Write-Host "Server started. PID: $actualProcessId" -ForegroundColor Green
+        Write-Host "Port: $port" -ForegroundColor Green
+        Write-Host "Profile: $Profile" -ForegroundColor Green
+        Write-Host "`nLog file: $logFile (created by Spring Boot logging configuration)" -ForegroundColor Yellow
         
-        # 프로세스 ID를 파일에 저장 (나중에 종료할 때 사용)
+        # Save process ID to file (for stopping later)
         $pidFile = Join-Path $scriptPath "always-server.pid"
         $actualProcessId | Out-File -FilePath $pidFile -Encoding ASCII
     } else {
-        Write-Host "서버가 시작되었습니다 (PID 확인 불가)" -ForegroundColor Green
-        Write-Host "포트: $port" -ForegroundColor Green
-        Write-Host "프로파일: $Profile" -ForegroundColor Green
+        Write-Host "Server started (PID not available)" -ForegroundColor Green
+        Write-Host "Port: $port" -ForegroundColor Green
+        Write-Host "Profile: $Profile" -ForegroundColor Green
     }
 } else {
-    # 포트를 사용하는 프로세스 확인
+    # Check process using port
     $portProcess = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
     if ($portProcess -or ($process -and (Get-Process -Id $process.Id -ErrorAction SilentlyContinue))) {
-        Write-Host "⚠️  서버 프로세스는 실행 중이지만 포트 $port 가 열리지 않았습니다." -ForegroundColor Yellow
-        Write-Host "`n표준 출력 로그 ($stdoutFile):" -ForegroundColor Yellow
+        Write-Host "WARNING: Server process is running but port $port is not open." -ForegroundColor Yellow
+        Write-Host "`nStandard output log ($stdoutFile):" -ForegroundColor Yellow
         if (Test-Path $stdoutFile) {
             Get-Content $stdoutFile -Tail 30
         }
-        Write-Host "`n표준 오류 로그 ($stderrFile):" -ForegroundColor Yellow
+        Write-Host "`nStandard error log ($stderrFile):" -ForegroundColor Yellow
         if (Test-Path $stderrFile) {
             Get-Content $stderrFile -Tail 30
         }
-        Write-Host "`n애플리케이션 로그 ($logFile):" -ForegroundColor Yellow
+        Write-Host "`nApplication log ($logFile):" -ForegroundColor Yellow
         if (Test-Path $logFile) {
             Get-Content $logFile -Tail 30
         }
-        # 프로세스는 실행 중이므로 성공으로 처리 (초기화가 늦을 수 있음)
+        # Process is running, treat as success (initialization may be slow)
         $pidFile = Join-Path $scriptPath "always-server.pid"
-        $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+        if ($portProcess) {
+            $portProcess[0] | Out-File -FilePath $pidFile -Encoding ASCII
+        } elseif ($process) {
+            $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+        }
     } else {
-        Write-Host "❌ 서버 시작 실패!" -ForegroundColor Red
+        Write-Host "ERROR: Server start failed!" -ForegroundColor Red
         exit 1
     }
 }
 
-Write-Host "`n=== 재기동 완료 ===" -ForegroundColor Green
-
+Write-Host "`n=== Restart Completed ===" -ForegroundColor Green

@@ -1,40 +1,39 @@
-# Jenkins용 Spring Boot 종료 스크립트
+# Jenkins Spring Boot Stop Script
 
-Write-Host "=== Always 서버 종료 시작 ===" -ForegroundColor Cyan
+Write-Host "=== Always Server Stop Started ===" -ForegroundColor Cyan
 
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
 $port = 8089
 
-# PID 파일이 있으면 사용
+# Use PID file if available
 $pidFile = Join-Path $scriptPath "always-server.pid"
 if (Test-Path $pidFile) {
     $processId = Get-Content $pidFile
     $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
     if ($process) {
-        Write-Host "프로세스 종료: PID $processId" -ForegroundColor Yellow
+        Write-Host "Stopping process: PID $processId" -ForegroundColor Yellow
         Stop-Process -Id $processId -Force
         Remove-Item $pidFile -Force
-        Write-Host "서버 종료 완료" -ForegroundColor Green
+        Write-Host "Server stopped" -ForegroundColor Green
         exit 0
     }
 }
 
-# PID 파일이 없거나 프로세스가 없으면 포트로 찾기
-Write-Host "포트 $port 사용 중인 프로세스 검색 중..." -ForegroundColor Yellow
+# If PID file not found or process not found, search by port
+Write-Host "Searching for process using port $port..." -ForegroundColor Yellow
 $processes = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
 
 if ($processes) {
     foreach ($processId in $processes) {
         $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($process -and $process.ProcessName -eq "java") {
-            Write-Host "프로세스 종료: PID $processId ($($process.ProcessName))" -ForegroundColor Yellow
+            Write-Host "Stopping process: PID $processId ($($process.ProcessName))" -ForegroundColor Yellow
             Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
         }
     }
-    Write-Host "서버 종료 완료" -ForegroundColor Green
+    Write-Host "Server stopped" -ForegroundColor Green
 } else {
-    Write-Host "실행 중인 서버가 없습니다." -ForegroundColor Yellow
+    Write-Host "No running server found." -ForegroundColor Yellow
 }
 
-Write-Host "=== 종료 완료 ===" -ForegroundColor Green
-
+Write-Host "=== Stop Completed ===" -ForegroundColor Green
