@@ -119,12 +119,41 @@ $process = Start-Process -FilePath "java" `
     -WindowStyle Hidden `
     -PassThru
 
-# 프로세스 시작 대기 (서버 초기화 시간)
-Start-Sleep -Seconds 5
+# 프로세스 시작 대기 및 상태 확인
+Write-Host "서버 초기화 대기 중..." -ForegroundColor Gray
+$maxWait = 30  # 최대 30초 대기
+$waitInterval = 2  # 2초마다 확인
+$elapsed = 0
+$isRunning = $false
 
-# 프로세스가 여전히 실행 중인지 확인
-$processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
-if ($processCheck) {
+while ($elapsed -lt $maxWait) {
+    Start-Sleep -Seconds $waitInterval
+    $elapsed += $waitInterval
+    
+    # 프로세스가 여전히 실행 중인지 확인
+    $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+    if (-not $processCheck) {
+        Write-Host "❌ 서버 프로세스가 종료되었습니다! (${elapsed}초 후)" -ForegroundColor Red
+        Write-Host "로그 파일을 확인하세요: $logFile" -ForegroundColor Yellow
+        if (Test-Path $logFile) {
+            Write-Host "`n최근 로그:" -ForegroundColor Yellow
+            Get-Content $logFile -Tail 30
+        }
+        exit 1
+    }
+    
+    # 포트가 열렸는지 확인 (서버가 실제로 준비되었는지)
+    $portCheck = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+    if ($portCheck) {
+        $isRunning = $true
+        Write-Host "✅ 서버가 정상적으로 시작되었습니다! (${elapsed}초 소요)" -ForegroundColor Green
+        break
+    }
+    
+    Write-Host "  대기 중... (${elapsed}/${maxWait}초)" -ForegroundColor Gray
+}
+
+if ($isRunning) {
     Write-Host "서버가 시작되었습니다. PID: $($process.Id)" -ForegroundColor Green
     Write-Host "포트: $port" -ForegroundColor Green
     Write-Host "프로파일: $Profile" -ForegroundColor Green
@@ -134,13 +163,21 @@ if ($processCheck) {
     $pidFile = Join-Path $scriptPath "always-server.pid"
     $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
 } else {
-    Write-Host "❌ 서버 시작 실패! 프로세스가 즉시 종료되었습니다." -ForegroundColor Red
-    Write-Host "로그 파일을 확인하세요: $logFile" -ForegroundColor Yellow
-    if (Test-Path $logFile) {
-        Write-Host "`n최근 로그:" -ForegroundColor Yellow
-        Get-Content $logFile -Tail 20
+    $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+    if ($processCheck) {
+        Write-Host "⚠️  서버 프로세스는 실행 중이지만 포트 $port 가 열리지 않았습니다." -ForegroundColor Yellow
+        Write-Host "로그 파일을 확인하세요: $logFile" -ForegroundColor Yellow
+        if (Test-Path $logFile) {
+            Write-Host "`n최근 로그:" -ForegroundColor Yellow
+            Get-Content $logFile -Tail 30
+        }
+        # 프로세스는 실행 중이므로 성공으로 처리 (초기화가 늦을 수 있음)
+        $pidFile = Join-Path $scriptPath "always-server.pid"
+        $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+    } else {
+        Write-Host "❌ 서버 시작 실패!" -ForegroundColor Red
+        exit 1
     }
-    exit 1
 }
 
 Write-Host "`n=== 재기동 완료 ===" -ForegroundColor Green
