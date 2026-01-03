@@ -147,6 +147,63 @@ Spring Boot 서버가 백그라운드로 실행되므로, 서버 로그는 다�
 - **파일 로그**: `C:\Users\jy_kim\.jenkins\workspace\always-deploy\always-svc\logs\application.log` (생성되는 경우)
 - **직접 확인**: 서버 프로세스의 표준 출력을 캡처하려면 스크립트 수정 필요
 
+### 데이터베이스 연결 여부 확인 방법
+
+빌드가 성공했지만 DB 연결 여부를 확인하려면:
+
+**방법 1: 애플리케이션 로그 파일 확인** ⭐
+
+Jenkins 서버에서 로그 파일 확인:
+```powershell
+# 로그 파일 위치로 이동
+cd C:\Users\jy_kim\.jenkins\workspace\always-deploy\always-svc\logs
+
+# 로그 파일 내용 확인 (최근 50줄)
+Get-Content application.log -Tail 50
+
+# 또는 실시간 로그 확인 (Ctrl+C로 종료)
+Get-Content application.log -Wait -Tail 20
+```
+
+로그에서 확인할 내용:
+- ✅ DB 연결 성공: "HikariPool-1 - Starting..." 또는 "Started AlwaysApplication"
+- ❌ DB 연결 실패: "Communications link failure" 또는 "Access denied for user"
+- MyBatis 연결: "MyBatis Mapper XML files loaded" 메시지 확인
+
+**방법 2: API 테스트**
+
+서버가 실행 중이면 브라우저 또는 curl로 테스트:
+```
+http://localhost:8089/api/hello
+```
+
+또는 DB 관련 API:
+```
+http://localhost:8089/api/menus
+```
+
+- ✅ 정상 응답: DB 연결 정상
+- ❌ 500 에러 또는 연결 오류: DB 연결 문제
+
+**방법 3: 포트 확인**
+
+서버가 실제로 실행 중인지 확인:
+```powershell
+netstat -ano | findstr :8089
+```
+
+**방법 4: 서버 프로세스 확인**
+
+Java 프로세스가 실행 중인지 확인:
+```powershell
+Get-Process -Name java -ErrorAction SilentlyContinue
+```
+
+**참고:**
+- 빌드가 "SUCCESS"이고 서버가 시작되었다는 메시지가 있으면 DB 연결이 성공했을 가능성이 높습니다
+- Spring Boot는 DB 연결 실패 시 애플리케이션이 시작되지 않거나 오류가 발생합니다
+- 확실하게 확인하려면 방법 1(로그 파일 확인)을 권장합니다
+
 ## 7. 환경 변수 설정 (필수)
 
 OpenAI API 기능을 사용하려면 Jenkins에서 환경 변수를 설정해야 합니다.
@@ -379,4 +436,63 @@ taskkill /PID <PID번호> /F
 - 서버 재기동 시 약간의 다운타임이 발생할 수 있습니다
 - 프로덕션 환경에서는 무중단 배포를 고려해야 합니다 (예: Blue-Green 배포)
 - 로그 파일 관리 정책 설정 권장
+
+## 프론트엔드-백엔드 연결 문제 해결
+
+### 웹에서 API 호출 시 네트워크 오류 발생
+
+**증상**: 프론트엔드(Vue)에서 API 호출 시 네트워크 오류 또는 CORS 오류
+
+**확인 사항:**
+
+1. **프론트엔드 API URL 설정 확인**
+   
+   `src/config/index.ts` 파일 확인:
+   ```typescript
+   export const apiBaseURL = 'http://localhost:8089/api'
+   export const imageBaseURL = 'http://localhost:8089'
+   ```
+   
+   ⚠️ 포트 번호 확인:
+   - 프론트엔드: `8088` (vue.config.js에서 설정)
+   - 백엔드: `8089` (application.properties에서 설정)
+
+2. **백엔드 서버 실행 확인**
+   
+   Jenkins 서버에서 백엔드가 실행 중인지 확인:
+   ```powershell
+   netstat -ano | findstr :8089
+   ```
+   
+   또는 브라우저에서:
+   ```
+   http://localhost:8089/api/hello
+   ```
+
+3. **CORS 설정 확인**
+   
+   `WebConfig.java`에서 프론트엔드 포트(`8088`)가 허용되어 있는지 확인:
+   ```java
+   .allowedOrigins("http://localhost:8088", "http://192.168.75.207:8088")
+   ```
+
+4. **프론트엔드 개발 서버 재시작**
+   
+   API URL을 변경했다면 프론트엔드 서버를 재시작:
+   ```powershell
+   # 프론트엔드 디렉토리에서
+   npm run serve
+   ```
+
+5. **브라우저 캐시 삭제**
+   
+   브라우저 개발자 도구(F12) → Network 탭에서 "Disable cache" 체크
+   또는 Ctrl + Shift + R (강력 새로고침)
+
+**일반적인 문제:**
+
+- ❌ API URL이 `8081`로 설정되어 있음 → `8089`로 변경
+- ❌ 백엔드 서버가 실행되지 않음 → Jenkins 빌드 확인
+- ❌ CORS 오류 → `WebConfig.java`의 `allowedOrigins` 확인
+- ❌ 프론트엔드 서버가 다른 포트에서 실행 중 → `vue.config.js` 확인
 

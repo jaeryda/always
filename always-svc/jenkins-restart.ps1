@@ -102,32 +102,46 @@ if ($env:DATABASE_URL) {
     Write-Host "📌 기본 DATABASE_URL 사용 (application-mysql.properties)" -ForegroundColor Gray
 }
 
-# 백그라운드에서 실행
-$processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-$processStartInfo.FileName = "java"
-$processStartInfo.Arguments = "-jar `"$($jarFile.FullName)`""
-$processStartInfo.WorkingDirectory = $scriptPath
-$processStartInfo.UseShellExecute = $false
-$processStartInfo.RedirectStandardOutput = $true
-$processStartInfo.RedirectStandardError = $true
-
-$process = [System.Diagnostics.Process]::Start($processStartInfo)
-
-# 로그 파일에 출력 저장 (선택사항)
+# 로그 파일 디렉토리 생성
 $logFile = Join-Path $scriptPath "logs\application.log"
 $logDir = Split-Path $logFile -Parent
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
 
-Write-Host "서버가 시작되었습니다. PID: $($process.Id)" -ForegroundColor Green
-Write-Host "포트: $port" -ForegroundColor Green
-Write-Host "프로파일: $Profile" -ForegroundColor Green
-Write-Host "`n로그 확인: $logFile" -ForegroundColor Yellow
+# 백그라운드에서 실행 (Start-Process 사용 - Jenkins에서 더 안정적)
+Write-Host "JAR 파일 실행 중: $($jarFile.FullName)" -ForegroundColor Gray
+$process = Start-Process -FilePath "java" `
+    -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
+    -WorkingDirectory $scriptPath `
+    -WindowStyle Hidden `
+    -PassThru `
+    -RedirectStandardOutput $logFile `
+    -RedirectStandardError $logFile
 
-# 프로세스 ID를 파일에 저장 (나중에 종료할 때 사용)
-$pidFile = Join-Path $scriptPath "always-server.pid"
-$process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+# 프로세스 시작 대기 (짧은 시간)
+Start-Sleep -Seconds 2
+
+# 프로세스가 여전히 실행 중인지 확인
+$processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+if ($processCheck) {
+    Write-Host "서버가 시작되었습니다. PID: $($process.Id)" -ForegroundColor Green
+    Write-Host "포트: $port" -ForegroundColor Green
+    Write-Host "프로파일: $Profile" -ForegroundColor Green
+    Write-Host "`n로그 확인: $logFile" -ForegroundColor Yellow
+    
+    # 프로세스 ID를 파일에 저장 (나중에 종료할 때 사용)
+    $pidFile = Join-Path $scriptPath "always-server.pid"
+    $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+} else {
+    Write-Host "❌ 서버 시작 실패! 프로세스가 즉시 종료되었습니다." -ForegroundColor Red
+    Write-Host "로그 파일을 확인하세요: $logFile" -ForegroundColor Yellow
+    if (Test-Path $logFile) {
+        Write-Host "`n최근 로그:" -ForegroundColor Yellow
+        Get-Content $logFile -Tail 20
+    }
+    exit 1
+}
 
 Write-Host "`n=== 재기동 완료 ===" -ForegroundColor Green
 
