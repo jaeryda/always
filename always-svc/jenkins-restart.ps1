@@ -109,18 +109,18 @@ if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
 
-# 백그라운드에서 실행 (Start-Process 사용 - Jenkins에서 더 안정적)
+# 백그라운드에서 실행 (Start-Process 사용 - 리다이렉션 없이 실행)
 Write-Host "JAR 파일 실행 중: $($jarFile.FullName)" -ForegroundColor Gray
+
+# Start-Process를 사용하여 백그라운드로 실행 (로그는 Spring Boot의 파일 로깅 설정 사용)
 $process = Start-Process -FilePath "java" `
     -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
     -WorkingDirectory $scriptPath `
     -WindowStyle Hidden `
-    -PassThru `
-    -RedirectStandardOutput $logFile `
-    -RedirectStandardError $logFile
+    -PassThru
 
-# 프로세스 시작 대기 (짧은 시간)
-Start-Sleep -Seconds 2
+# 프로세스 시작 대기 (서버 초기화 시간)
+Start-Sleep -Seconds 5
 
 # 프로세스가 여전히 실행 중인지 확인
 $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
@@ -128,7 +128,7 @@ if ($processCheck) {
     Write-Host "서버가 시작되었습니다. PID: $($process.Id)" -ForegroundColor Green
     Write-Host "포트: $port" -ForegroundColor Green
     Write-Host "프로파일: $Profile" -ForegroundColor Green
-    Write-Host "`n로그 확인: $logFile" -ForegroundColor Yellow
+    Write-Host "`n로그 확인: $logFile (Spring Boot 로그 파일 설정에 따라 생성됨)" -ForegroundColor Yellow
     
     # 프로세스 ID를 파일에 저장 (나중에 종료할 때 사용)
     $pidFile = Join-Path $scriptPath "always-server.pid"
