@@ -164,22 +164,47 @@ Jenkins 서버 시스템 환경 변수로 설정:
      telnet 192.168.75.207 3306
      ```
 
-2. **DB URL 환경 변수로 변경**
-   - Jenkins Job 설정 → **Build Environment** → **Inject environment variables to the build process**
-   - **Properties Content**에 추가:
+2. **DB URL 환경 변수로 변경 (Freestyle Project)**
+
+   **단계별 가이드:**
+   
+   1. Jenkins 대시보드에서 **`always-deploy`** Job 클릭
+   2. 왼쪽 메뉴에서 **"구성(Configure)"** 클릭
+   3. 아래로 스크롤하여 **"빌드 환경(Build Environment)"** 섹션 찾기
+   4. **"빌드 프로세스에 환경 변수 삽입(Inject environment variables to the build process)"** 체크박스 체크
+   5. **"Properties Content"** 텍스트 영역에 다음 내용 입력:
+      ```properties
+      DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      DATABASE_USERNAME=root
+      DATABASE_PASSWORD=your_password
+      ```
+   - 또는 원격 DB를 사용하는 경우 (접근 가능한 경우):
      ```properties
-     DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+     DATABASE_URL=jdbc:mysql://192.168.75.207:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
      DATABASE_USERNAME=root
-     DATABASE_PASSWORD=your_password
+     DATABASE_PASSWORD=1234
      ```
-   - 또는 로컬 DB를 사용하는 경우:
-     ```properties
-     DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+   6. 맨 아래 **"저장(Save)"** 버튼 클릭
+
+   **Pipeline Job인 경우:**
+   - `Jenkinsfile`의 `environment` 섹션에 추가:
+     ```groovy
+     environment {
+         DATABASE_URL = 'jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true'
+         DATABASE_USERNAME = 'root'
+         DATABASE_PASSWORD = 'your_password'
+     }
      ```
 
-3. **빌드 단계에서 환경 변수 설정**
+3. **빌드 단계에서 환경 변수 설정 (대안)**
+   
+   Jenkins Job 설정 → **빌드(Build)** 섹션 → **빌드 단계 추가(Add build step)** → **Execute Windows batch command**
+   
    ```batch
    set DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+   set DATABASE_USERNAME=root
+   set DATABASE_PASSWORD=your_password
+   cd always-svc
    powershell -ExecutionPolicy Bypass -File jenkins-restart.ps1 -Profile mysql
    ```
 
