@@ -125,7 +125,7 @@ Jenkins에서 빌드를 실행하면 **실시간으로 로그를 확인**할 수
 
 **증상:**
 - Jenkins 빌드 로그: "서버가 정상적으로 시작되었습니다!"
-- 하지만 `http://localhost:8089/api/hello` 호출 시 응답 없음
+- 하지만 `http://192.168.75.207:8089/api/hello` 호출 시 응답 없음
 - `stdout.log`에서 `Shutdown initiated...` 확인됨
 
 **원인:**
@@ -368,8 +368,8 @@ netstat -ano | findstr :8089
    
    `src/config/index.ts` 파일 확인:
    ```typescript
-   export const apiBaseURL = 'http://localhost:8089/api'
-   export const imageBaseURL = 'http://localhost:8089'
+   export const apiBaseURL = 'http://192.168.75.207:8089/api'
+   export const imageBaseURL = 'http://192.168.75.207:8089'
    ```
    
    ⚠️ 포트 번호 확인:
@@ -385,7 +385,7 @@ netstat -ano | findstr :8089
    
    또는 브라우저에서:
    ```
-   http://localhost:8089/api/hello
+   http://192.168.75.207:8089/api/hello
    ```
 
 3. **CORS 설정 확인**

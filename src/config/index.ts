@@ -1,7 +1,7 @@
 // 환경 변수 및 설정 관리
 export const config = {
-  apiBaseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:8089/api',
-  imageBaseURL: process.env.VUE_APP_IMAGE_BASE_URL || 'http://localhost:8089/images'
+  apiBaseURL: process.env.VUE_APP_API_BASE_URL || 'http://192.168.75.207:8089/api',
+  imageBaseURL: process.env.VUE_APP_IMAGE_BASE_URL || 'http://192.168.75.207:8089/images'
 }
 
 // API URL 생성 헬퍼 함수
