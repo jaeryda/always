@@ -202,14 +202,55 @@ Jenkins 서버 시스템 환경 변수로 설정:
 **"DB 호출이 안 되는 경우":**
 
 1. **네트워크 연결 확인**
-   - Jenkins 서버에서 DB 서버로 접근 가능한지 확인:
-     ```powershell
-     Test-NetConnection -ComputerName 192.168.75.207 -Port 3306
-     ```
-   - 또는:
-     ```powershell
-     telnet 192.168.75.207 3306
-     ```
+
+   **방법 1: PowerShell Test-NetConnection (권장)** ⭐
+   
+   **Jenkins 서버에서 PowerShell 열기:**
+   - Windows 키 누르기
+   - "PowerShell" 또는 "Windows PowerShell" 검색
+   - "Windows PowerShell" 클릭하여 실행
+   - 또는 Windows 키 + X → "Windows PowerShell" 또는 "터미널" 선택
+   
+   PowerShell을 열고 다음 명령어 실행:
+   ```powershell
+   Test-NetConnection -ComputerName 192.168.75.207 -Port 3306
+   ```
+   
+   결과 확인:
+   - `TcpTestSucceeded: True` → 네트워크 연결 정상 ✅
+   - `TcpTestSucceeded: False` → 네트워크 연결 불가 ❌ (방화벽 또는 네트워크 문제)
+   
+   **방법 2: telnet 사용**
+   
+   ```powershell
+   telnet 192.168.75.207 3306
+   ```
+   - 연결 성공: 빈 화면이 나타나면 연결 성공 (Ctrl+C로 종료)
+   - 연결 실패: "연결할 수 없습니다" 오류 메시지
+   
+   ⚠️ telnet이 설치되어 있지 않은 경우:
+   - Windows 기능에서 "Telnet 클라이언트" 활성화 필요
+   - 또는 방법 1 사용 권장
+   
+   **방법 3: MySQL 클라이언트 사용 (가장 정확)**
+   
+   Jenkins 서버에 MySQL 클라이언트가 설치되어 있다면:
+   ```powershell
+   mysql -h 192.168.75.207 -P 3306 -u root -p
+   ```
+   - 비밀번호 입력 후 연결 성공하면 데이터베이스 연결 정상 ✅
+   - "Can't connect to MySQL server" 오류 → 연결 불가 ❌
+   
+   **방법 4: 로컬 DB 확인**
+   
+   Jenkins 서버에서 로컬 MySQL이 실행 중인지 확인:
+   ```powershell
+   Test-NetConnection -ComputerName localhost -Port 3306
+   ```
+   또는:
+   ```powershell
+   mysql -h localhost -u root -p
+   ```
 
 2. **DB URL 환경 변수로 변경 (Freestyle Project)**
 
