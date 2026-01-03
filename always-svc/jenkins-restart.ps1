@@ -117,10 +117,15 @@ $stdoutFile = Join-Path $logDir "stdout.log"
 $stderrFile = Join-Path $logDir "stderr.log"
 
 # Start-Process를 사용하여 백그라운드로 실행
-# 주의: RedirectStandardOutput과 RedirectStandardError는 다른 파일이어야 함
+# -NoNewWindow: 새 창을 만들지 않고 백그라운드에서 실행
+# -WindowStyle Hidden: 창을 숨김
+# -RedirectStandardOutput/RedirectStandardError: 로그를 파일로 리다이렉트
+# -PassThru: 프로세스 객체 반환
+# 주의: Jenkins 빌드가 종료되어도 프로세스가 계속 실행되도록 별도 프로세스로 실행
 $process = Start-Process -FilePath "java" `
     -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
     -WorkingDirectory $scriptPath `
+    -NoNewWindow `
     -WindowStyle Hidden `
     -RedirectStandardOutput $stdoutFile `
     -RedirectStandardError $stderrFile `
