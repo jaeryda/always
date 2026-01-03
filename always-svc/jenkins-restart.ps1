@@ -129,6 +129,9 @@ $process = Start-Process -FilePath "java" `
     -RedirectStandardError $stderrFile `
     -PassThru
 
+# Store process ID immediately to avoid file descriptor issues
+$processId = $process.Id
+
 # Wait for process start and check status
 Write-Host "Waiting for server initialization..." -ForegroundColor Gray
 $maxWait = 30  # Maximum 30 seconds wait
@@ -140,8 +143,8 @@ while ($elapsed -lt $maxWait) {
     Start-Sleep -Seconds $waitInterval
     $elapsed += $waitInterval
     
-    # Check if process is still running
-    $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+    # Check if process is still running (using stored process ID)
+    $processCheck = Get-Process -Id $processId -ErrorAction SilentlyContinue
     if (-not $processCheck) {
         Write-Host "ERROR: Server process terminated! (after ${elapsed}s)" -ForegroundColor Red
         Write-Host "`nStandard output log ($stdoutFile):" -ForegroundColor Yellow
@@ -197,7 +200,8 @@ if ($isRunning) {
 } else {
     # Check process using port
     $portProcess = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
-    if ($portProcess -or ($process -and (Get-Process -Id $process.Id -ErrorAction SilentlyContinue))) {
+    $processStillRunning = Get-Process -Id $processId -ErrorAction SilentlyContinue
+    if ($portProcess -or $processStillRunning) {
         Write-Host "WARNING: Server process is running but port $port is not open." -ForegroundColor Yellow
         Write-Host "`nStandard output log ($stdoutFile):" -ForegroundColor Yellow
         if (Test-Path $stdoutFile) {
@@ -215,13 +219,23 @@ if ($isRunning) {
         $pidFile = Join-Path $scriptPath "always-server.pid"
         if ($portProcess) {
             $portProcess[0] | Out-File -FilePath $pidFile -Encoding ASCII
-        } elseif ($process) {
-            $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+        } elseif ($processStillRunning) {
+            $processId | Out-File -FilePath $pidFile -Encoding ASCII
         }
     } else {
         Write-Host "ERROR: Server start failed!" -ForegroundColor Red
         exit 1
     }
 }
+
+# Clean up process object to prevent file descriptor leaks
+if ($process) {
+    try {
+        $process.Dispose()
+    } catch {
+        # Ignore disposal errors
+    }
+}
+$process = $null
 
 Write-Host "`n=== Restart Completed ===" -ForegroundColor Green
