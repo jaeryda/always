@@ -112,7 +112,7 @@ if (-not (Test-Path $logDir)) {
 # 백그라운드에서 실행 (Start-Process 사용)
 Write-Host "JAR 파일 실행 중: $($jarFile.FullName)" -ForegroundColor Gray
 
-# 표준 출력과 표준 오류를 별도 파일로 리다이렉트 (Start-Process 제한사항)
+# 표준 출력과 표준 오류를 별도 파일로 리다이렉트
 $stdoutFile = Join-Path $logDir "stdout.log"
 $stderrFile = Join-Path $logDir "stderr.log"
 
@@ -124,7 +124,7 @@ $stderrFile = Join-Path $logDir "stderr.log"
 $process = Start-Process -FilePath "java" `
     -ArgumentList "-jar", "`"$($jarFile.FullName)`"" `
     -WorkingDirectory $scriptPath `
-    -NoNewWindow `
+    -WindowStyle Hidden `
     -RedirectStandardOutput $stdoutFile `
     -RedirectStandardError $stderrFile `
     -PassThru
@@ -177,17 +177,27 @@ while ($elapsed -lt $maxWait) {
 }
 
 if ($isRunning) {
-    Write-Host "서버가 시작되었습니다. PID: $($process.Id)" -ForegroundColor Green
-    Write-Host "포트: $port" -ForegroundColor Green
-    Write-Host "프로파일: $Profile" -ForegroundColor Green
-    Write-Host "`n로그 확인: $logFile (Spring Boot 로그 파일 설정에 따라 생성됨)" -ForegroundColor Yellow
-    
-    # 프로세스 ID를 파일에 저장 (나중에 종료할 때 사용)
-    $pidFile = Join-Path $scriptPath "always-server.pid"
-    $process.Id | Out-File -FilePath $pidFile -Encoding ASCII
+    # 포트를 사용하는 프로세스 ID 가져오기
+    $portProcess = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
+    if ($portProcess) {
+        $actualProcessId = $portProcess[0]
+        Write-Host "서버가 시작되었습니다. PID: $actualProcessId" -ForegroundColor Green
+        Write-Host "포트: $port" -ForegroundColor Green
+        Write-Host "프로파일: $Profile" -ForegroundColor Green
+        Write-Host "`n로그 확인: $logFile (Spring Boot 로그 파일 설정에 따라 생성됨)" -ForegroundColor Yellow
+        
+        # 프로세스 ID를 파일에 저장 (나중에 종료할 때 사용)
+        $pidFile = Join-Path $scriptPath "always-server.pid"
+        $actualProcessId | Out-File -FilePath $pidFile -Encoding ASCII
+    } else {
+        Write-Host "서버가 시작되었습니다 (PID 확인 불가)" -ForegroundColor Green
+        Write-Host "포트: $port" -ForegroundColor Green
+        Write-Host "프로파일: $Profile" -ForegroundColor Green
+    }
 } else {
-    $processCheck = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
-    if ($processCheck) {
+    # 포트를 사용하는 프로세스 확인
+    $portProcess = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique
+    if ($portProcess -or ($process -and (Get-Process -Id $process.Id -ErrorAction SilentlyContinue))) {
         Write-Host "⚠️  서버 프로세스는 실행 중이지만 포트 $port 가 열리지 않았습니다." -ForegroundColor Yellow
         Write-Host "`n표준 출력 로그 ($stdoutFile):" -ForegroundColor Yellow
         if (Test-Path $stdoutFile) {
