@@ -30,7 +30,8 @@ Jenkins 관리 → 플러그인 관리에서 다음 플러그인을 설치하세
 4. **Pipeline** 섹션에서:
    - Definition: **Pipeline script from SCM**
    - SCM: **Git**
-   - Repository URL: Git 저장소 URL (또는 로컬 경로)
+   - Repository URL: `https://github.com/jaeryda/always.git` (GitHub 저장소 URL)
+   - **Branches to build**: `*/main` 또는 `main` (기본값이 `*/master`인 경우 변경 필요)
    - Script Path: `Jenkinsfile` (기본값)
 
 ### 방법 2: Freestyle Project (GUI 설정)
@@ -41,7 +42,8 @@ Jenkins 관리 → 플러그인 관리에서 다음 플러그인을 설치하세
 
 #### 소스 코드 관리
 - Git 선택
-- Repository URL 입력
+- Repository URL: `https://github.com/jaeryda/always.git`
+- **Branch Specifier**: `*/main` 또는 `main` (⚠️ 기본값 `*/master`에서 변경 필수!)
 
 #### 빌드 단계 추가
 
@@ -98,7 +100,94 @@ powershell -ExecutionPolicy Bypass -File jenkins-restart.ps1 -Profile mysql
 - 콘솔: Jenkins 빌드 콘솔 출력
 - 파일: `always-svc/logs/application.log` (생성되는 경우)
 
-## 7. 포트 확인
+## 7. 환경 변수 설정 (필수)
+
+OpenAI API 기능을 사용하려면 Jenkins에서 환경 변수를 설정해야 합니다.
+
+### 방법 1: Jenkins Credentials 사용 (권장)
+
+1. **Jenkins 관리** → **Credentials** → **System** → **Global credentials**
+2. **Add Credentials** 클릭
+3. 설정:
+   - **Kind**: `Secret text`
+   - **Secret**: OpenAI API 키 입력
+   - **ID**: `openai-api-key` (Jenkinsfile과 동일하게)
+   - **Description**: `OpenAI API Key`
+4. **OK** 클릭
+
+### 방법 2: Jenkins Job 환경 변수 설정
+
+**Pipeline Job:**
+- Jenkinsfile의 `environment` 섹션에 직접 추가:
+  ```groovy
+  environment {
+      OPENAI_API_KEY = 'your-api-key-here'  // 또는 credentials('openai-api-key')
+  }
+  ```
+
+**Freestyle Project:**
+1. Job 설정 → **Build Environment**
+2. **Use secret text(s) or file(s)** 체크 (Credentials Binding 플러그인 필요)
+3. **Bindings** → **Add** → **Secret text**
+4. **Variable**: `OPENAI_API_KEY`
+5. **Credentials**: 생성한 Credentials 선택
+
+**또는 빌드 단계에서 직접 설정:**
+```batch
+set OPENAI_API_KEY=your-api-key-here
+powershell -ExecutionPolicy Bypass -File jenkins-restart.ps1 -Profile mysql
+```
+
+### 방법 3: 시스템 환경 변수 (Windows)
+
+Jenkins 서버 시스템 환경 변수로 설정:
+```powershell
+[System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY", "your-api-key-here", [System.EnvironmentVariableTarget]::Machine)
+```
+
+⚠️ **보안 참고사항:**
+- API 키를 코드에 직접 하드코딩하지 마세요
+- Jenkins Credentials를 사용하는 것이 가장 안전합니다
+- 프로덕션 환경에서는 반드시 Credentials를 사용하세요
+
+### 데이터베이스 연결 문제
+
+**"DB 호출이 안 되는 경우":**
+
+1. **네트워크 연결 확인**
+   - Jenkins 서버에서 DB 서버로 접근 가능한지 확인:
+     ```powershell
+     Test-NetConnection -ComputerName 192.168.75.207 -Port 3306
+     ```
+   - 또는:
+     ```powershell
+     telnet 192.168.75.207 3306
+     ```
+
+2. **DB URL 환경 변수로 변경**
+   - Jenkins Job 설정 → **Build Environment** → **Inject environment variables to the build process**
+   - **Properties Content**에 추가:
+     ```properties
+     DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+     DATABASE_USERNAME=root
+     DATABASE_PASSWORD=your_password
+     ```
+   - 또는 로컬 DB를 사용하는 경우:
+     ```properties
+     DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+     ```
+
+3. **빌드 단계에서 환경 변수 설정**
+   ```batch
+   set DATABASE_URL=jdbc:mysql://localhost:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+   powershell -ExecutionPolicy Bypass -File jenkins-restart.ps1 -Profile mysql
+   ```
+
+4. **MySQL 서버 상태 확인**
+   - MySQL 서버가 실행 중인지 확인
+   - 방화벽에서 3306 포트가 열려있는지 확인
+
+## 8. 포트 확인
 
 서버가 정상적으로 시작되었는지 확인:
 ```powershell
@@ -110,7 +199,7 @@ netstat -ano | findstr :8089
 http://localhost:8089/api/hello
 ```
 
-## 8. 자동 배포 설정 (선택사항)
+## 9. 자동 배포 설정 (선택사항)
 
 ### Git Webhook 설정
 1. Git 저장소에서 Webhook 추가
@@ -124,6 +213,23 @@ http://localhost:8089/api/hello
 3. 또는 **Poll SCM** 선택하여 주기적으로 체크
 
 ## 문제 해결
+
+### "Couldn't find any revision to build" 오류
+
+Jenkins가 `master` 브랜치를 찾지 못하는 경우:
+
+**원인**: Jenkins Job 설정에서 브랜치가 `master`로 설정되어 있는데, 실제 Git 저장소는 `main` 브랜치를 사용하고 있습니다.
+
+**해결 방법**:
+1. Jenkins Job 설정 페이지로 이동 (`always-deploy` Job → **Configure**)
+2. **Pipeline Job**인 경우:
+   - **Pipeline** 섹션 → **Branches to build** → `*/main` 또는 `main`으로 변경 (기본값: `*/master`)
+3. **Freestyle Project**인 경우:
+   - **소스 코드 관리** → **Branch Specifier** → `*/main` 또는 `main`으로 변경 (기본값: `*/master`)
+4. **저장** 클릭
+5. 다시 빌드 실행
+
+⚠️ **주의**: GitHub의 기본 브랜치가 `main`으로 변경되었으므로, Jenkins Job도 `main` 브랜치를 사용하도록 설정해야 합니다.
 
 ### PowerShell 실행 정책 오류
 ```powershell
@@ -143,10 +249,17 @@ taskkill /PID <PID번호> /F
 - 시스템 환경 변수에 JAVA_HOME 설정 확인
 - 또는 Jenkins 도구 설정에서 JDK 경로 확인
 
+### "PID 변수는 읽기 전용이거나 상수이므로 덮어쓸 수 없습니다" 오류
+
+**원인**: PowerShell의 `$pid`는 현재 프로세스 ID를 나타내는 읽기 전용 자동 변수입니다.
+
+**해결**: 최신 버전의 스크립트를 사용하세요. `$pid` 변수가 `$processId`로 변경되었습니다.
+
 ### 빌드 실패
 - Jenkins 콘솔 출력 확인
 - Maven Wrapper 권한 확인
 - 디스크 공간 확인
+- JAR 파일을 찾을 수 없는 경우: `target` 디렉토리가 생성되었는지 확인
 
 ## 참고 사항
 

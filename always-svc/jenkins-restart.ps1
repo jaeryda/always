@@ -90,10 +90,16 @@ Write-Host "`n서버 시작 중..." -ForegroundColor Cyan
 
 $env:SPRING_PROFILES_ACTIVE = $Profile
 
-# OpenAI API 키 환경 변수 확인 (Jenkins에서 설정된 경우 사용)
+# 환경 변수 확인 및 안내
 if (-not $env:OPENAI_API_KEY) {
     Write-Host "⚠️  OPENAI_API_KEY 환경 변수가 설정되지 않았습니다." -ForegroundColor Yellow
     Write-Host "   OpenAI 기능을 사용하려면 Jenkins Job에서 환경 변수를 설정하세요." -ForegroundColor Yellow
+}
+
+if ($env:DATABASE_URL) {
+    Write-Host "📌 DATABASE_URL 환경 변수 사용: $env:DATABASE_URL" -ForegroundColor Cyan
+} else {
+    Write-Host "📌 기본 DATABASE_URL 사용 (application-mysql.properties)" -ForegroundColor Gray
 }
 
 # 백그라운드에서 실행
