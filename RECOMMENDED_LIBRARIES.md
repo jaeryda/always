@@ -130,7 +130,7 @@ API 문서 자동 생성
 
 **주요 기능:**
 - API 엔드포인트 자동 문서화
-- Swagger UI 제공 (http://localhost:8081/swagger-ui.html)
+- Swagger UI 제공 (http://192.168.75.207:8089/swagger-ui.html)
 - API 테스트 가능
 
 **설정 예시:**

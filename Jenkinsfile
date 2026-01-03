@@ -5,6 +5,11 @@ pipeline {
         // 프로젝트 경로 (Jenkins 작업공간 기준)
         PROJECT_DIR = "${WORKSPACE}/always-svc"
         JAVA_HOME = tool 'JDK-17'  // Jenkins에서 JDK 도구 이름 설정 필요
+        // OpenAI API 키 설정 방법:
+        // 1. Jenkins Credentials 사용 (권장): credentials('openai-api-key')
+        // 2. 직접 설정: 'your-api-key-here'
+        // 3. Jenkins Job 설정에서 환경 변수로 설정하는 경우 이 줄을 제거하세요
+        OPENAI_API_KEY = credentials('openai-api-key')  // Credentials ID: openai-api-key (없으면 주석 처리)
     }
     
     stages {

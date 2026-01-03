@@ -38,7 +38,7 @@ Post Entity에 `image_path` 컬럼이 추가되었습니다:
 
 **예제 (cURL):**
 ```bash
-curl -X POST http://localhost:8081/api/posts/1/image \
+curl -X POST http://192.168.75.207:8089/api/posts/1/image \
   -F "file=@/path/to/image.jpg"
 ```
 
@@ -46,11 +46,11 @@ curl -X POST http://localhost:8081/api/posts/1/image \
 
 이미지는 정적 리소스로 제공됩니다:
 
-**GET** `http://localhost:8081/images/{filename}`
+**GET** `http://192.168.75.207:8089/images/{filename}`
 
 브라우저에서 직접 접속 가능:
 ```
-http://localhost:8081/images/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg
+http://192.168.75.207:8089/images/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg
 ```
 
 ### 3. 포스트 조회 시 이미지 URL
@@ -69,7 +69,7 @@ http://localhost:8081/images/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg
     "imagePath": "a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
     ...
   },
-  "imageUrl": "http://localhost:8081/images/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
+  "imageUrl": "http://192.168.75.207:8089/images/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
   "timestamp": "..."
 }
 ```
@@ -123,13 +123,13 @@ registry.addResourceHandler("/images/**")
 
 1. **이미지 업로드**:
    - Method: POST
-   - URL: `http://localhost:8081/api/posts/1/image`
+   - URL: `http://192.168.75.207:8089/api/posts/1/image`
    - Body: form-data
    - Key: `file` (type: File)
    - Value: 이미지 파일 선택
 
 2. **이미지 확인**:
-   - 브라우저에서: `http://localhost:8081/images/{filename}`
+   - 브라우저에서: `http://192.168.75.207:8089/images/{filename}`
 
 ## ⚠️ 주의사항
 
