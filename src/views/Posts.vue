@@ -236,6 +236,12 @@
                   </el-button>
                 </div>
               </div>
+              
+              <el-divider />
+              
+              <div style="text-align: center;">
+                <el-button type="primary" @click="$router.push('/')">홈으로</el-button>
+              </div>
             </el-space>
           </div>
         </el-card>

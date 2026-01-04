@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/menus")
-@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.207:8088"})
+@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.85:8088"})
 public class MenuController {
 
     private final MenuService menuService;

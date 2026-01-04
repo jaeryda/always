@@ -23,8 +23,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
         String path = request.getRequestURI();
         
-        // 공개 엔드포인트는 인증 불필요 (로그인, 회원가입, 메뉴, OpenAI API)
+        // 공개 엔드포인트는 인증 불필요 (로그인, 회원가입, 메뉴, OpenAI API, 카카오 로그인)
         if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register") 
+                || path.startsWith("/api/auth/kakao/login")
                 || path.startsWith("/api/hello") || path.startsWith("/api/menus") 
                 || path.startsWith("/api/openai/")) {
             return true;

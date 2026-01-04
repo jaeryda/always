@@ -78,12 +78,12 @@
                     </div>
                   </el-card>
                   
-                  <el-card shadow="hover" class="link-card" @click="$router.push('/about')">
+                  <el-card shadow="hover" class="link-card" @click="$router.push('/ai')">
                     <div class="link-content">
-                      <el-icon class="link-icon" style="color: #67c23a;"><InfoFilled /></el-icon>
+                      <el-icon class="link-icon" style="color: #67c23a;"><ChatDotRound /></el-icon>
                       <div class="link-text">
-                        <div class="link-title">About</div>
-                        <div class="link-description">프로젝트 정보를 확인합니다</div>
+                        <div class="link-title">AI</div>
+                        <div class="link-description">OpenAI를 사용한 AI 채팅 기능을 사용합니다</div>
                       </div>
                       <el-icon class="link-arrow"><ArrowRight /></el-icon>
                     </div>
@@ -139,7 +139,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Box, Document, InfoFilled, Connection, ArrowRight, User, Menu, CreditCard } from '@element-plus/icons-vue'
+import { Box, Document, InfoFilled, Connection, ArrowRight, User, Menu, CreditCard, ChatDotRound } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { useMenuStore } from '@/store/menu'
 import { postsApi } from '@/api/posts'

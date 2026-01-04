@@ -23,7 +23,7 @@
 **현재 상태**: `.env` 파일이 없고 하드코딩된 값 사용
 ```typescript
 // src/api/index.ts
-baseURL: process.env.VUE_APP_API_BASE_URL || 'http://192.168.75.207:8089/api'
+baseURL: process.env.VUE_APP_API_BASE_URL || 'http://192.168.75.85:8089/api'
 ```
 
 **개선 방안**:
@@ -168,8 +168,8 @@ npm install --save-dev @types/lodash-es
 ### 1. 환경 변수 파일 생성
 `.env.development` 파일 생성:
 ```env
-VUE_APP_API_BASE_URL=http://192.168.75.207:8089/api
-VUE_APP_IMAGE_BASE_URL=http://192.168.75.207:8089/images
+VUE_APP_API_BASE_URL=http://192.168.75.85:8089/api
+VUE_APP_IMAGE_BASE_URL=http://192.168.75.85:8089/images
 ```
 
 `.env.production` 파일 생성:

@@ -19,6 +19,10 @@ export interface LoginData {
   password: string
 }
 
+export interface KakaoLoginData {
+  accessToken: string
+}
+
 export interface AuthResponse {
   success: boolean
   message: string
@@ -61,6 +65,13 @@ export const authApi = {
    */
   logout: async (): Promise<AxiosResponse<AuthResponse>> => {
     return api.post('/auth/logout')
+  },
+
+  /**
+   * 카카오 로그인
+   */
+  loginWithKakao: async (data: KakaoLoginData): Promise<AxiosResponse<AuthResponse>> => {
+    return api.post('/auth/kakao/login', data)
   }
 }
 

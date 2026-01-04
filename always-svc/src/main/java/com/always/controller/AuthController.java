@@ -19,7 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.207:8088"})
+@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.85:8088"})
 public class AuthController {
 
     @Autowired
@@ -163,6 +163,35 @@ public class AuthController {
         response.put("success", true);
         response.put("message", "로그아웃되었습니다.");
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/kakao/login")
+    public ResponseEntity<?> loginWithKakao(@RequestBody Map<String, String> kakaoRequest, HttpServletResponse httpResponse) {
+        Map<String, Object> response = new HashMap<>();
+        
+        String accessToken = kakaoRequest.get("accessToken");
+        
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            response.put("success", false);
+            response.put("message", "카카오 액세스 토큰이 필요합니다.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            // 카카오 API로 사용자 정보 조회
+            // TODO: 카카오 REST API를 호출하여 사용자 정보를 가져오는 로직 구현
+            // 현재는 간단한 구현으로, 실제로는 카카오 API를 호출해야 함
+            // 예: https://kapi.kakao.com/v2/user/me
+            
+            response.put("success", false);
+            response.put("message", "카카오 로그인 기능은 아직 구현 중입니다.");
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "카카오 로그인 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/users/{id}")

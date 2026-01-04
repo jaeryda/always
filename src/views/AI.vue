@@ -76,6 +76,12 @@
               <el-text size="small" type="info">Ctrl+Enter 또는 Cmd+Enter로 전송</el-text>
             </div>
           </div>
+          
+          <el-divider />
+          
+          <div style="text-align: center;">
+            <el-button type="primary" @click="$router.push('/')">홈으로</el-button>
+          </div>
         </el-card>
       </el-main>
     </el-container>
