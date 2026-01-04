@@ -31,7 +31,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.85:8088"}) // Vue 개발 서버 주소
+@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.99:8088"}) // Vue 개발 서버 주소
 public class ApiController {
 
     private final PostService postService;
@@ -95,7 +95,7 @@ public class ApiController {
                 .map(post -> {
                     response.put("post", post);
                     if (post.getImagePath() != null && !post.getImagePath().isEmpty()) {
-                        response.put("imageUrl", "http://192.168.75.85:8089/images/" + post.getImagePath());
+                        response.put("imageUrl", "http://192.168.75.99:8089/images/" + post.getImagePath());
                     }
                     response.put("timestamp", LocalDateTime.now());
                     return ResponseEntity.ok(response);
