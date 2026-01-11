@@ -3,7 +3,9 @@
     <el-container>
       <el-header class="app-header">
         <div class="app-header-content">
-          <h1 class="app-logo" @click="$router.push('/')">Always</h1>
+          <div class="app-logo" @click="$router.push('/')">
+            <img src="@/assets/logo.png" alt="Always Logo" class="logo-image" />
+          </div>
           <el-menu
             :default-active="activeIndex"
             class="nav-menu"
@@ -58,15 +60,52 @@
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useMenuStore } from '@/store/menu'
 import { useAuthStore } from '@/store/auth'
 import { House, Document, InfoFilled, ChatDotRound, User, UserFilled, Right, CreditCard } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
+const router = useRouter()
 const menuStore = useMenuStore()
 const authStore = useAuthStore()
 const activeIndex = computed(() => route.path)
+
+// 카카오 로그인 성공 처리
+onMounted(() => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const kakaoLogin = urlParams.get('kakaoLogin')
+  
+  if (kakaoLogin === 'success') {
+    // 카카오 로그인 성공 시 쿠키 설정 후 약간의 지연을 두고 사용자 정보 복원
+    // 쿠키가 브라우저에 설정되는데 시간이 필요할 수 있음
+    // forceCheck=true로 설정하여 쿠키 확인을 우회하고 바로 API 호출
+    setTimeout(() => {
+      authStore.restoreAuth(true).then(() => {
+        ElMessage.success('카카오 로그인 성공')
+        // URL에서 파라미터 제거
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }).catch((error) => {
+        console.error('카카오 로그인 후 인증 상태 복원 실패:', error)
+      })
+    }, 100) // 100ms 지연
+  }
+
+  const naverLogin = urlParams.get('naverLogin')
+  if (naverLogin === 'success') {
+    // 네이버 로그인 성공 시 쿠키 설정 후 약간의 지연을 두고 사용자 정보 복원
+    setTimeout(() => {
+      authStore.restoreAuth(true).then(() => {
+        ElMessage.success('네이버 로그인 성공')
+        // URL에서 파라미터 제거
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }).catch((error) => {
+        console.error('네이버 로그인 후 인증 상태 복원 실패:', error)
+      })
+    }, 100) // 100ms 지연
+  }
+})
 
 // overflow 메뉴 닫기 타이머 관리
 let closeMenuTimer: ReturnType<typeof setTimeout> | null = null

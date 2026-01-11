@@ -31,10 +31,10 @@ set DATABASE_USERNAME=root
 set DATABASE_PASSWORD=your_password
 ```
 
-**원격 DB 사용 (192.168.75.99 접근 가능한 경우):**
+**원격 DB 사용 (192.168.75.80 접근 가능한 경우):**
 ```
 set OPENAI_API_KEY=your-openai-api-key-here
-set "DATABASE_URL=jdbc:mysql://192.168.75.99:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
+set "DATABASE_URL=jdbc:mysql://192.168.75.80:3306/always_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true"
 set DATABASE_USERNAME=root
 set DATABASE_PASSWORD=1234
 ```
@@ -125,7 +125,7 @@ Jenkins에서 빌드를 실행하면 **실시간으로 로그를 확인**할 수
 
 **증상:**
 - Jenkins 빌드 로그: "서버가 정상적으로 시작되었습니다!"
-- 하지만 `http://192.168.75.99:8089/api/hello` 호출 시 응답 없음
+- 하지만 `http://192.168.75.80:8089/api/hello` 호출 시 응답 없음
 - `stdout.log`에서 `Shutdown initiated...` 확인됨
 
 **원인:**
@@ -263,7 +263,7 @@ Jenkins 서버 시스템 환경 변수로 설정:
    
    PowerShell을 열고 다음 명령어 실행:
    ```powershell
-   Test-NetConnection -ComputerName 192.168.75.99 -Port 3306
+   Test-NetConnection -ComputerName 192.168.75.80 -Port 3306
    ```
    
    결과 확인:
@@ -273,7 +273,7 @@ Jenkins 서버 시스템 환경 변수로 설정:
    **방법 2: telnet 사용**
    
    ```powershell
-   telnet 192.168.75.99 3306
+   telnet 192.168.75.80 3306
    ```
    - 연결 성공: 빈 화면이 나타나면 연결 성공 (Ctrl+C로 종료)
    - 연결 실패: "연결할 수 없습니다" 오류 메시지
@@ -285,7 +285,7 @@ Jenkins 서버 시스템 환경 변수로 설정:
    **방법 3: MySQL 클라이언트 사용 (가장 정확)**
    
    ```powershell
-   mysql -h 192.168.75.99 -u root -p
+   mysql -h 192.168.75.80 -u root -p
    ```
    - 연결 성공: MySQL 프롬프트 표시
    - 연결 실패: 오류 메시지 표시
@@ -368,8 +368,8 @@ netstat -ano | findstr :8089
    
    `src/config/index.ts` 파일 확인:
    ```typescript
-   export const apiBaseURL = 'http://192.168.75.99:8089/api'
-   export const imageBaseURL = 'http://192.168.75.99:8089'
+   export const apiBaseURL = 'http://192.168.75.80:8089/api'
+   export const imageBaseURL = 'http://192.168.75.80:8089'
    ```
    
    ⚠️ 포트 번호 확인:
@@ -385,14 +385,14 @@ netstat -ano | findstr :8089
    
    또는 브라우저에서:
    ```
-   http://192.168.75.99:8089/api/hello
+   http://192.168.75.80:8089/api/hello
    ```
 
 3. **CORS 설정 확인**
    
    `WebConfig.java`에서 프론트엔드 포트(`8088`)가 허용되어 있는지 확인:
    ```java
-   .allowedOrigins("http://localhost:8088", "http://192.168.75.99:8088")
+   .allowedOrigins("http://localhost:8088", "http://192.168.75.80:8088")
    ```
 
 4. **프론트엔드 개발 서버 재시작**

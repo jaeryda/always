@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:8088", "http://192.168.75.99:8088") // Vue 개발 서버
+                .allowedOrigins("http://localhost:8088", "http://192.168.75.80:8088") // Vue 개발 서버
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -34,7 +34,7 @@ public class WebConfig implements WebMvcConfigurer {
         // JWT 인증 인터셉터 (인증이 필요한 요청)
         registry.addInterceptor(jwtAuthInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/auth/login", "/api/auth/register", "/api/auth/kakao/login", "/api/hello", "/api/menus/**", "/api/openai/**"); // 인증 불필요한 경로 제외
+                .excludePathPatterns("/api/auth/login", "/api/auth/register", "/api/auth/kakao/callback", "/api/auth/kakao/register", "/api/auth/kakao/login", "/api/auth/naver/callback", "/api/auth/naver/register", "/api/hello", "/api/menus/**", "/api/openai/**"); // 인증 불필요한 경로 제외
     }
 
     @Override

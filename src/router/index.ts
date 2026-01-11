@@ -5,6 +5,7 @@ import PostDetail from '../views/PostDetail.vue'
 import About from '../views/About.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
+import SocialRegister from '../views/SocialRegister.vue'
 import AI from '../views/AI.vue'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
@@ -24,6 +25,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/register',
     name: 'Register',
     component: Register
+  },
+  {
+    path: '/social-register',
+    name: 'SocialRegister',
+    component: SocialRegister
   },
   {
     path: '/posts',

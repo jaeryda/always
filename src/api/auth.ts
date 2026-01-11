@@ -72,6 +72,20 @@ export const authApi = {
    */
   loginWithKakao: async (data: KakaoLoginData): Promise<AxiosResponse<AuthResponse>> => {
     return api.post('/auth/kakao/login', data)
+  },
+
+  /**
+   * 카카오 소셜 로그인 가입
+   */
+  registerWithKakao: async (data: { email: string; nickname?: string; kakaoId: string; username: string }): Promise<AxiosResponse<AuthResponse>> => {
+    return api.post('/auth/kakao/register', data)
+  },
+
+  /**
+   * 네이버 소셜 로그인 가입
+   */
+  registerWithNaver: async (data: { email: string; nickname?: string; naverId: string; username: string }): Promise<AxiosResponse<AuthResponse>> => {
+    return api.post('/auth/naver/register', data)
   }
 }
 

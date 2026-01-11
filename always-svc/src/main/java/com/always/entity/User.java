@@ -19,7 +19,7 @@ public class User {
     private Long id;
 
     @NotBlank(message = "사용자명은 필수입니다")
-    @Size(min = 3, max = 50, message = "사용자명은 3자 이상 50자 이하로 입력해주세요")
+    @Size(min = 2, max = 50, message = "사용자명은 2자 이상 50자 이하로 입력해주세요")
     private String username;
 
     @NotBlank(message = "비밀번호는 필수입니다")
@@ -29,6 +29,8 @@ public class User {
     @Email(message = "올바른 이메일 형식이 아닙니다")
     @NotBlank(message = "이메일은 필수입니다")
     private String email;
+
+    private String loginType;  // 로그인 타입: email, kakao, naver, google 등
 
     private LocalDateTime createdAt;
 

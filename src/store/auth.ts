@@ -66,7 +66,18 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout(): Promise<void> {
     try {
       // 백엔드에 로그아웃 요청 (쿠키 삭제)
-      await authApi.logout()
+      const response = await authApi.logout()
+      const data = response.data as any
+      
+      // 카카오 로그인 사용자인 경우 카카오 로그아웃 URL로 리다이렉트
+      if (data.kakaoLogoutUrl && data.isKakaoUser) {
+        console.log('[AuthStore] 카카오 로그아웃 URL로 리다이렉트:', data.kakaoLogoutUrl)
+        user.value = null
+        token.value = null
+        // 카카오 로그아웃 페이지로 이동 (카카오 로그아웃 후 logoutRedirectUri로 리다이렉트됨)
+        window.location.href = data.kakaoLogoutUrl
+        return
+      }
     } catch (error) {
       console.error('로그아웃 요청 실패:', error)
     } finally {
@@ -78,7 +89,25 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // 앱 시작 시 인증 상태 복원 (쿠키 기반)
-  async function restoreAuth(): Promise<void> {
+  async function restoreAuth(forceCheck = false): Promise<void> {
+    // forceCheck가 false이고 쿠키가 없으면 API 호출하지 않음 (로그인하지 않은 상태)
+    // forceCheck가 true이면 (카카오 로그인 직후 등) 쿠키 확인을 우회하고 바로 API 호출
+    if (!forceCheck) {
+      // document.cookie가 존재하는지 확인하고 안전하게 체크
+      try {
+        if (!document.cookie || !document.cookie.includes('auth_token')) {
+          user.value = null
+          token.value = null
+          return
+        }
+      } catch (e) {
+        // document.cookie 접근 오류 시 안전하게 처리
+        user.value = null
+        token.value = null
+        return
+      }
+    }
+
     // 쿠키에서 토큰이 자동으로 전송되므로 /api/auth/me로 사용자 정보 확인
     try {
       const response = await authApi.getCurrentUser()
@@ -91,8 +120,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
         token.value = null
       }
-    } catch (error) {
-      // 토큰이 유효하지 않거나 없음
+    } catch (error: any) {
+      // 토큰이 유효하지 않거나 없음 (401은 정상 - 로그인하지 않은 상태)
       user.value = null
       token.value = null
     }

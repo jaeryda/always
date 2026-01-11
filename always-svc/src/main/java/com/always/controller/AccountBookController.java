@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/account-book")
-@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.99:8088"})
+@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.80:8088"})
 public class AccountBookController {
 
     private final TransactionService transactionService;

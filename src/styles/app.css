@@ -30,17 +30,25 @@
 }
 
 .app-logo {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
   margin: 0;
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   cursor: pointer;
   transition: opacity 0.3s ease;
   user-select: none;
+  height: 90px; /* 로고 높이 증가 */
 }
 
-.app-logo:hover {
+.logo-image {
+  height: 100%;
+  width: auto;
+  max-height: 80px;
+  object-fit: contain;
+  transition: opacity 0.3s ease;
+}
+
+.app-logo:hover .logo-image {
   opacity: 0.8;
 }
 

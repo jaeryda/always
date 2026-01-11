@@ -61,13 +61,24 @@ api.interceptors.response.use(
       const fullUrl = (error.config?.baseURL || '') + url
       const status = error.response.status
       
-      console.error(`❌ [API Error] ${method} ${fullUrl} - ${status}`, error.response.data)
-      
       switch (status) {
         case 401:
           // 인증 에러 처리 (쿠키는 백엔드에서 처리)
-          console.error('인증 오류가 발생했습니다.')
-          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          // /api/auth/me는 restoreAuth에서 호출되므로 조용히 처리 (정상)
+          // 로그인 페이지나 소셜 가입 페이지에서는 401 오류를 조용히 처리 (정상적인 상황)
+          if (typeof window !== 'undefined') {
+            const isAuthMeEndpoint = url.includes('/auth/me')
+            const isPublicPage = window.location.pathname.includes('/login') || 
+                                 window.location.pathname.includes('/social-register') ||
+                                 window.location.pathname.includes('/register')
+            
+            if (isAuthMeEndpoint || isPublicPage) {
+              // /api/auth/me 또는 공개 페이지에서는 401 오류를 조용히 처리 (정상)
+              break
+            }
+            
+            console.error(`❌ [API Error] ${method} ${fullUrl} - ${status}`, error.response.data)
+            console.error('인증 오류가 발생했습니다.')
             window.location.href = '/login'
           }
           break

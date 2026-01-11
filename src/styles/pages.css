@@ -26,7 +26,8 @@
   color: #606266;
 }
 
-.kakao-login-container {
+.kakao-login-container,
+.social-login-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,7 +35,8 @@
   margin-top: 8px;
 }
 
-.kakao-login-button {
+.kakao-login-button,
+.naver-login-button {
   background: none;
   border: none;
   padding: 0;
@@ -42,10 +44,17 @@
   display: inline-block;
 }
 
-.kakao-login-button img {
+.kakao-login-button img,
+.naver-login-button img {
   display: block;
-  max-width: 100%;
-  height: auto;
+  width: 222px;
+  height: 33.64px; /* 222 / 6.6 = 33.636... (가로:세로 비율 6.6:1) */
+  object-fit: cover; /* 비율을 유지하면서 영역을 채움 */
+}
+
+.kakao-login-button:hover,
+.naver-login-button:hover {
+  opacity: 0.9;
 }
 
 /* Home 페이지 */

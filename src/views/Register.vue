@@ -19,7 +19,7 @@
             <el-form-item label="사용자명" prop="username">
               <el-input
                 v-model="registerForm.username"
-                placeholder="사용자명을 입력하세요 (3자 이상)"
+                placeholder="사용자명을 입력하세요 (2자 이상)"
                 clearable>
                 <template #prefix>
                   <el-icon><User /></el-icon>
@@ -122,7 +122,7 @@ const validateConfirmPassword = (rule: any, value: any, callback: any) => {
 const registerRules: FormRules = {
   username: [
     { required: true, message: '사용자명을 입력해주세요', trigger: 'blur' },
-    { min: 3, max: 50, message: '사용자명은 3자 이상 50자 이하로 입력해주세요', trigger: 'blur' }
+    { min: 2, max: 50, message: '사용자명은 2자 이상 50자 이하로 입력해주세요', trigger: 'blur' }
   ],
   email: [
     { required: true, message: '이메일을 입력해주세요', trigger: 'blur' },
