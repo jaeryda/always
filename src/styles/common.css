@@ -1,95 +1,186 @@
-/* ============================================
-   공통 스타일 (Common Styles)
-   ============================================ */
+/* Global design tokens and shared styles */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
-/* 페이지 레이아웃 */
+:root {
+  --tone-ink: #16322d;
+  --tone-muted: #47615c;
+  --tone-primary: #1f7f6b;
+  --tone-accent: #e28a3d;
+  --tone-accent-strong: #c96d1f;
+  --surface-base: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.9);
+  --line-soft: rgba(19, 84, 71, 0.14);
+  --shadow-soft: 0 10px 30px rgba(25, 64, 56, 0.1);
+  --shadow-strong: 0 20px 42px rgba(22, 59, 52, 0.16);
+}
+
+html,
+body,
+#app {
+  font-family: 'Space Grotesk', 'Noto Sans KR', sans-serif;
+  color: var(--tone-ink);
+}
+
+/* Page container */
 .page-container {
+  position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:
+    radial-gradient(1200px 500px at 15% -5%, rgba(48, 154, 129, 0.32), transparent 60%),
+    radial-gradient(920px 480px at 86% 110%, rgba(223, 145, 56, 0.34), transparent 66%),
+    linear-gradient(135deg, #f6f3e8 0%, #e8f4ef 50%, #fdf0dc 100%);
+}
+
+.page-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      -28deg,
+      rgba(255, 255, 255, 0.28) 0 8px,
+      rgba(255, 255, 255, 0.04) 8px 18px
+    );
+  opacity: 0.22;
 }
 
 .page-main {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
-  padding-top: 1rem;
+  position: relative;
+  z-index: 1;
   width: 100%;
-  box-sizing: border-box;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 1.8rem 2rem 2.6rem;
+  animation: pageRise 0.5s ease-out;
 }
 
-@media (max-width: 768px) {
-  .page-main {
-    padding: 1rem;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  
-  .el-main {
-    padding: 0 !important;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-}
-
-/* 카드 헤더 */
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #303133;
+  gap: 10px;
+  font-size: 1.16rem;
+  font-weight: 700;
+  color: var(--tone-ink);
 }
 
 .card-header-icon {
-  font-size: 1.3rem;
-  color: #409eff;
+  font-size: 1.24rem;
+  color: var(--tone-primary);
 }
 
-/* Element Plus 카드 커스터마이징 (전역 스타일) */
+/* Element Plus global overrides */
+.el-main {
+  background: transparent !important;
+}
+
 .el-card {
-  --card-hover-lift: 0px; /* 카드 hover 시 올라가는 높이 (0으로 설정하면 애니메이션 비활성화) */
-  border-radius: 12px;
-  border: 1px solid #ebeef5;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
+  --card-hover-lift: -4px;
+  border-radius: 22px;
+  border: 1px solid var(--line-soft);
+  background: var(--surface-base);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease;
 }
 
 .el-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transform: translateY(var(--card-hover-lift));
+  box-shadow: var(--shadow-strong);
+  border-color: rgba(34, 128, 109, 0.28);
 }
 
 .el-card__header {
-  padding: 20px;
-  border-bottom: 1px solid #ebeef5;
-  background-color: #fafbfc;
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(22, 94, 79, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.6));
 }
 
 .el-card__body {
-  padding: 24px;
+  padding: 22px;
 }
 
-/* 반응형 */
+.el-button {
+  border-radius: 11px;
+  font-weight: 600;
+}
+
+.el-button--primary {
+  border: none;
+  background: linear-gradient(135deg, #237f6d, #2e9b82);
+  box-shadow: 0 8px 20px rgba(24, 101, 85, 0.22);
+}
+
+.el-button--primary:hover {
+  filter: brightness(1.03);
+}
+
+.el-button--success {
+  border: none;
+  background: linear-gradient(135deg, #2d9657, #48b36f);
+}
+
+.el-button--warning {
+  border: none;
+  background: linear-gradient(135deg, #d7842c, #e39b40);
+}
+
+.el-button--danger {
+  border: none;
+  background: linear-gradient(135deg, #d45d46, #e47962);
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 1px rgba(34, 106, 91, 0.16) inset !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px rgba(32, 131, 110, 0.38) inset !important;
+}
+
+.el-pagination.is-background .el-pager li.is-active {
+  background: #1f7f6b !important;
+}
+
+@keyframes pageRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 768px) {
   .page-main {
-    padding: 2rem 2.5%;
-    padding-top: 2rem;
-    width: 100%;
+    padding: 1.1rem 0.8rem 1.4rem;
     max-width: 100%;
-    box-sizing: border-box;
   }
-  
+
   .el-main {
-    padding: 2rem 2.5% !important;
-    padding-top: 2rem !important;
+    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    box-sizing: border-box !important;
     overflow-x: visible !important;
   }
-}
 
+  .el-card {
+    border-radius: 18px;
+  }
+
+  .el-card__header {
+    padding: 16px 16px;
+  }
+
+  .el-card__body {
+    padding: 16px;
+  }
+}

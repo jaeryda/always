@@ -4,7 +4,7 @@
       <el-header class="app-header">
         <div class="app-header-content">
           <div class="app-logo" @click="$router.push('/')">
-            <img src="@/assets/logo.png" alt="Always Logo" class="logo-image" />
+            <img src="@/assets/logo.svg" alt="Always Logo" class="logo-image" />
           </div>
 
           <el-menu :default-active="activeIndex" class="nav-menu" mode="horizontal" router>
@@ -122,6 +122,7 @@ onMounted(() => {
   menuStore.fetchMenus(true)
   if (authStore.isAuthenticated) {
     notificationStore.load()
+    notificationStore.connectStream()
   }
 
   const urlParams = new URLSearchParams(window.location.search)
@@ -140,6 +141,9 @@ watch(
   (isAuthed) => {
     if (isAuthed) {
       notificationStore.load()
+      notificationStore.connectStream()
+    } else {
+      notificationStore.disconnectStream()
     }
   }
 )

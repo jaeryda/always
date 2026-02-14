@@ -26,14 +26,21 @@ public class PostSocialController {
     }
 
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<?> getPostSocial(@PathVariable Long postId, HttpServletRequest request) {
+    public ResponseEntity<?> getPostSocial(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         Map<String, Object> response = new HashMap<>();
         response.put("likeCount", postSocialService.getLikeCount(postId));
         response.put("bookmarkCount", postSocialService.getBookmarkCount(postId));
         response.put("liked", userId != null && postSocialService.isLiked(postId, userId));
         response.put("bookmarked", userId != null && postSocialService.isBookmarked(postId, userId));
-        response.put("comments", postSocialService.getComments(postId));
+        response.put("comments", postSocialService.getComments(postId, page, size));
+        response.put("commentsTotal", postSocialService.countComments(postId));
+        response.put("commentsPage", page);
+        response.put("commentsSize", size);
         return ResponseEntity.ok(response);
     }
 
@@ -62,8 +69,17 @@ public class PostSocialController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<List<PostComment>> getComments(@PathVariable Long postId) {
-        return ResponseEntity.ok(postSocialService.getComments(postId));
+    public ResponseEntity<?> getComments(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "comments", postSocialService.getComments(postId, page, size),
+                "total", postSocialService.countComments(postId),
+                "page", page,
+                "size", size
+        ));
     }
 
     @PostMapping("/posts/{postId}/comments")
@@ -87,10 +103,20 @@ public class PostSocialController {
     }
 
     @GetMapping("/bookmarks")
-    public ResponseEntity<?> getBookmarks(HttpServletRequest request) {
+    public ResponseEntity<?> getBookmarks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false));
-        List<Post> posts = postSocialService.getBookmarkedPosts(userId);
-        return ResponseEntity.ok(Map.of("success", true, "posts", posts));
+        List<Post> posts = postSocialService.getBookmarkedPosts(userId, page, size);
+        int total = postSocialService.countBookmarkedPosts(userId);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "posts", posts,
+                "total", total,
+                "page", page,
+                "size", size
+        ));
     }
 }

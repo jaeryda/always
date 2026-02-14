@@ -118,11 +118,11 @@ const fetchUser = async () => {
       user.value = data.user
       await fetchUserPosts()
     } else {
-      ElMessage.error(data.message || '사용자 정보를 불러올 수 없습니다.')
+      ElMessage.error('사용자 정보를 불러올 수 없습니다.')
     }
   } catch (error: any) {
     console.error('사용자 정보 조회 실패:', error)
-    ElMessage.error(error.response?.data?.message || '사용자 정보를 불러올 수 없습니다.')
+    ElMessage.error('사용자 정보를 불러올 수 없습니다.')
   } finally {
     loading.value = false
   }

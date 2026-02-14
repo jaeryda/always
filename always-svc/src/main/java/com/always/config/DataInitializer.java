@@ -210,9 +210,17 @@ public class DataInitializer implements CommandLineRunner {
             defaultUser.setUsername("admin");
             defaultUser.setEmail("admin@example.com");
             defaultUser.setPassword(passwordEncoder.encode("admin123"));
+            defaultUser.setLoginType("email");
+            defaultUser.setRole("ADMIN");
             defaultUser.setCreatedAt(LocalDateTime.now());
             defaultUser.setUpdatedAt(LocalDateTime.now());
             userMapper.insert(defaultUser);
+        } else {
+            if (defaultUser.getRole() == null || defaultUser.getRole().isBlank()) {
+                defaultUser.setRole("ADMIN");
+                defaultUser.setUpdatedAt(LocalDateTime.now());
+                userMapper.update(defaultUser);
+            }
         }
 
         // 기존 Post 데이터의 author_id를 정리 (외래 키 제약 조건 해결)
@@ -416,6 +424,14 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void ensureFeatureTables() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'USER'");
+        } catch (Exception ignored) {
+            // already exists
+        }
+        jdbcTemplate.update("UPDATE users SET role = 'USER' WHERE role IS NULL OR role = ''");
+        jdbcTemplate.update("UPDATE users SET role = 'ADMIN' WHERE username = 'admin'");
+
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS post_reactions (
                 id BIGINT AUTO_INCREMENT PRIMARY KEY,

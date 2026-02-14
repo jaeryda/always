@@ -8,8 +8,8 @@ import java.util.List;
 
 @Mapper
 public interface PostCommentMapper {
-    List<PostComment> findByPostId(@Param("postId") Long postId);
+    List<PostComment> findByPostId(@Param("postId") Long postId, @Param("offset") int offset, @Param("limit") int limit);
+    int countByPostId(@Param("postId") Long postId);
     void insert(PostComment comment);
     int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 }
-

@@ -8,14 +8,20 @@ export const usePostSocialStore = defineStore('postSocial', () => {
   const liked = ref<boolean>(false)
   const bookmarked = ref<boolean>(false)
   const comments = ref<SocialComment[]>([])
+  const commentsTotal = ref<number>(0)
+  const commentsPage = ref<number>(0)
+  const commentsSize = ref<number>(20)
 
-  const load = async (postId: number) => {
-    const response = await socialApi.getPostSocial(postId)
+  const load = async (postId: number, page = commentsPage.value, size = commentsSize.value) => {
+    const response = await socialApi.getPostSocial(postId, page, size)
     likeCount.value = response.data.likeCount
     bookmarkCount.value = response.data.bookmarkCount
     liked.value = response.data.liked
     bookmarked.value = response.data.bookmarked
     comments.value = response.data.comments || []
+    commentsTotal.value = response.data.commentsTotal || 0
+    commentsPage.value = response.data.commentsPage || page
+    commentsSize.value = response.data.commentsSize || size
   }
 
   const toggleLike = async (postId: number): Promise<boolean> => {
@@ -34,13 +40,13 @@ export const usePostSocialStore = defineStore('postSocial', () => {
 
   const addComment = async (postId: number, content: string): Promise<void> => {
     await socialApi.addComment(postId, content)
-    await load(postId)
+    await load(postId, 0, commentsSize.value)
   }
 
   const removeComment = async (postId: number, commentId: number): Promise<boolean> => {
     const response = await socialApi.deleteComment(commentId)
     if (response.data.success) {
-      await load(postId)
+      await load(postId, commentsPage.value, commentsSize.value)
       return true
     }
     return false
@@ -52,6 +58,9 @@ export const usePostSocialStore = defineStore('postSocial', () => {
     liked,
     bookmarked,
     comments,
+    commentsTotal,
+    commentsPage,
+    commentsSize,
     load,
     toggleLike,
     toggleBookmark,
@@ -59,4 +68,3 @@ export const usePostSocialStore = defineStore('postSocial', () => {
     removeComment
   }
 })
-

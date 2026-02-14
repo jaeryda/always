@@ -12,7 +12,7 @@
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <select id="findByPostId" parameterType="Long" resultMap="PostCommentMap">
+    <select id="findByPostId" resultMap="PostCommentMap">
         SELECT
             c.id,
             c.post_id,
@@ -25,6 +25,13 @@
         JOIN users u ON c.user_id = u.id
         WHERE c.post_id = #{postId}
         ORDER BY c.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByPostId" resultType="int">
+        SELECT COUNT(*)
+        FROM post_comments
+        WHERE post_id = #{postId}
     </select>
 
     <insert id="insert" parameterType="com.always.entity.PostComment" useGeneratedKeys="true" keyProperty="id">
@@ -38,4 +45,3 @@
     </delete>
 
 </mapper>
-

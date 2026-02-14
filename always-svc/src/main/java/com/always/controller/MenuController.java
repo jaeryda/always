@@ -1,7 +1,10 @@
 package com.always.controller;
 
 import com.always.entity.Menu;
+import com.always.entity.User;
 import com.always.service.MenuService;
+import com.always.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/menus")
@@ -18,23 +22,25 @@ import java.util.Map;
 public class MenuController {
 
     private final MenuService menuService;
+    private final UserService userService;
 
     @Autowired
-    public MenuController(MenuService menuService) {
+    public MenuController(MenuService menuService, UserService userService) {
         this.menuService = menuService;
+        this.userService = userService;
+    }
+
+    private boolean isAdmin(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) return false;
+        Optional<User> userOpt = userService.findById(userId);
+        return userOpt.map(user -> "ADMIN".equalsIgnoreCase(user.getRole())).orElse(false);
     }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllMenus(@RequestParam(required = false) Boolean visible) {
         Map<String, Object> response = new HashMap<>();
-        List<Menu> menus;
-        
-        if (visible != null && visible) {
-            menus = menuService.getVisibleMenus();
-        } else {
-            menus = menuService.getAllMenus();
-        }
-        
+        List<Menu> menus = (visible != null && visible) ? menuService.getVisibleMenus() : menuService.getAllMenus();
         response.put("menus", menus);
         response.put("count", menus.size());
         response.put("timestamp", LocalDateTime.now());
@@ -51,35 +57,37 @@ public class MenuController {
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Menu not found with id: " + id,
-                                "timestamp", LocalDateTime.now())));
+                        .body(Map.of("error", "Menu not found with id: " + id, "timestamp", LocalDateTime.now())));
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createMenu(@RequestBody Map<String, Object> menuData) {
+    public ResponseEntity<Map<String, Object>> createMenu(@RequestBody Map<String, Object> menuData, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false, "message", "Admin only"));
+        }
+
         Map<String, Object> response = new HashMap<>();
-        
         Menu menu = new Menu();
         menu.setName((String) menuData.get("name"));
         menu.setPath((String) menuData.get("path"));
         menu.setIcon((String) menuData.get("icon"));
         menu.setDisplayOrder((Integer) menuData.get("displayOrder"));
         menu.setVisible(menuData.get("visible") != null ? (Boolean) menuData.get("visible") : true);
-        
+
         Menu createdMenu = menuService.createMenu(menu);
-        
-        response.put("message", "메뉴가 생성되었습니다.");
+        response.put("message", "메뉴가 생성되었습니다");
         response.put("menu", createdMenu);
         response.put("timestamp", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateMenu(
-            @PathVariable Long id,
-            @RequestBody Map<String, Object> menuData) {
+    public ResponseEntity<Map<String, Object>> updateMenu(@PathVariable Long id, @RequestBody Map<String, Object> menuData, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false, "message", "Admin only"));
+        }
+
         Map<String, Object> response = new HashMap<>();
-        
         try {
             Menu menu = new Menu();
             menu.setName((String) menuData.get("name"));
@@ -87,10 +95,9 @@ public class MenuController {
             menu.setIcon((String) menuData.get("icon"));
             menu.setDisplayOrder((Integer) menuData.get("displayOrder"));
             menu.setVisible(menuData.get("visible") != null ? (Boolean) menuData.get("visible") : true);
-            
+
             Menu updatedMenu = menuService.updateMenu(id, menu);
-            
-            response.put("message", "메뉴가 업데이트되었습니다.");
+            response.put("message", "메뉴가 업데이트되었습니다");
             response.put("menu", updatedMenu);
             response.put("timestamp", LocalDateTime.now());
             return ResponseEntity.ok(response);
@@ -102,12 +109,15 @@ public class MenuController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteMenu(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteMenu(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false, "message", "Admin only"));
+        }
+
         Map<String, Object> response = new HashMap<>();
-        
         try {
             menuService.deleteMenu(id);
-            response.put("message", "메뉴가 삭제되었습니다.");
+            response.put("message", "메뉴가 삭제되었습니다");
             response.put("id", id);
             response.put("timestamp", LocalDateTime.now());
             return ResponseEntity.ok(response);
@@ -118,4 +128,3 @@ public class MenuController {
         }
     }
 }
-

@@ -25,7 +25,16 @@ public class PostSocialService {
     }
 
     public List<PostComment> getComments(Long postId) {
-        return postCommentMapper.findByPostId(postId);
+        return postCommentMapper.findByPostId(postId, 0, 20);
+    }
+
+    public List<PostComment> getComments(Long postId, int page, int size) {
+        int offset = Math.max(page, 0) * Math.max(size, 1);
+        return postCommentMapper.findByPostId(postId, offset, size);
+    }
+
+    public int countComments(Long postId) {
+        return postCommentMapper.countByPostId(postId);
     }
 
     public PostComment addComment(Long postId, Long userId, String content) {
@@ -77,7 +86,12 @@ public class PostSocialService {
         return true;
     }
 
-    public List<Post> getBookmarkedPosts(Long userId) {
-        return postReactionMapper.findBookmarkedPostsByUserId(userId);
+    public List<Post> getBookmarkedPosts(Long userId, int page, int size) {
+        int offset = Math.max(page, 0) * Math.max(size, 1);
+        return postReactionMapper.findBookmarkedPostsByUserId(userId, offset, size);
+    }
+
+    public int countBookmarkedPosts(Long userId) {
+        return postReactionMapper.countBookmarkedPostsByUserId(userId);
     }
 }

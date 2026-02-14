@@ -20,6 +20,14 @@
             </el-table-column>
             <el-table-column prop="content" label="내용" min-width="260" show-overflow-tooltip />
           </el-table>
+          <el-pagination
+            v-if="total > pageSize"
+            style="margin-top: 16px; justify-content: center;"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :total="total"
+            layout="prev, pager, next"
+            @current-change="handlePageChange" />
         </el-card>
       </el-main>
     </el-container>
@@ -32,9 +40,20 @@ import type { Post } from '@/api/posts'
 import { socialApi } from '@/api/social'
 
 const posts = ref<Post[]>([])
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-onMounted(async () => {
-  const response = await socialApi.getBookmarks()
+const load = async () => {
+  const response = await socialApi.getBookmarks(currentPage.value - 1, pageSize.value)
   posts.value = (response.data.posts || []) as Post[]
-})
+  total.value = response.data.total || 0
+}
+
+const handlePageChange = async (page: number) => {
+  currentPage.value = page
+  await load()
+}
+
+onMounted(load)
 </script>

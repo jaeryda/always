@@ -160,11 +160,10 @@ const handleRegister = async () => {
           await authStore.restoreAuth()
           router.push('/')
         } else {
-          ElMessage.error(data.message || '가입에 실패했습니다.')
+          ElMessage.error('가입에 실패했습니다. 잠시 후 다시 시도해주세요.')
         }
       } catch (error: any) {
-        const errorMessage = error.response?.data?.message || '가입 중 오류가 발생했습니다.'
-        ElMessage.error(errorMessage)
+        ElMessage.error('가입 처리 중 오류가 발생했습니다.')
       } finally {
         loading.value = false
       }
@@ -207,4 +206,3 @@ const handleCancel = () => {
   margin-bottom: 16px;
 }
 </style>
-

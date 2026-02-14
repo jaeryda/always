@@ -95,6 +95,14 @@
                       @click="removeComment(item.id)">삭제</el-button>
                   </div>
                 </el-card>
+                <el-pagination
+                  v-if="socialStore.commentsTotal > socialStore.commentsSize"
+                  style="margin-top: 12px; justify-content: center;"
+                  :current-page="socialStore.commentsPage + 1"
+                  :page-size="socialStore.commentsSize"
+                  :total="socialStore.commentsTotal"
+                  layout="prev, pager, next"
+                  @current-change="handleCommentPageChange" />
               </div>
             </div>
           </div>
@@ -155,7 +163,7 @@ const fetchPost = async () => {
     if (post.value) {
       editForm.value = { title: post.value.title, content: post.value.content }
     }
-    await socialStore.load(postId.value)
+    await socialStore.load(postId.value, 0, socialStore.commentsSize)
   } catch (err) {
     error.value = '포스트를 불러오는데 실패했습니다.'
     console.error(err)
@@ -265,6 +273,10 @@ const removeComment = async (commentId: number) => {
   if (ok) {
     await notificationStore.pushNotification('댓글 삭제', '댓글이 삭제되었습니다.')
   }
+}
+
+const handleCommentPageChange = async (page: number) => {
+  await socialStore.load(postId.value, page - 1, socialStore.commentsSize)
 }
 
 onMounted(fetchPost)

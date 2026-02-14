@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => token.value !== null && user.value !== null)
   const username = computed(() => user.value?.username || '')
-  const isAdmin = computed(() => user.value?.username === 'admin')
+  const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
   const saveSession = (nextUser: User | null) => {
     if (!nextUser) {
@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem(AUTH_STORAGE_KEY)
       return
     }
-    localStorage.setItem(ROLE_STORAGE_KEY, nextUser.username === 'admin' ? 'admin' : 'user')
+    localStorage.setItem(ROLE_STORAGE_KEY, nextUser.role === 'ADMIN' ? 'ADMIN' : 'USER')
     localStorage.setItem(AUTH_STORAGE_KEY, '1')
   }
 
@@ -36,15 +36,14 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = data.user
         token.value = 'cookie-based'
         saveSession(data.user)
-        ElMessage.success(data.message || '로그인 성공')
+        ElMessage.success('로그인되었습니다.')
         return true
       }
 
-      ElMessage.error(data.message || '로그인 실패')
+      ElMessage.error('아이디 또는 비밀번호를 확인해주세요.')
       return false
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '로그인 중 오류가 발생했습니다.'
-      ElMessage.error(errorMessage)
+      ElMessage.error('로그인 중 오류가 발생했습니다.')
       return false
     } finally {
       loading.value = false
@@ -58,15 +57,14 @@ export const useAuthStore = defineStore('auth', () => {
       const data = response.data
 
       if (data.success) {
-        ElMessage.success(data.message || '회원가입 성공')
+        ElMessage.success('회원가입이 완료되었습니다.')
         return true
       }
 
-      ElMessage.error(data.message || '회원가입 실패')
+      ElMessage.error('회원가입에 실패했습니다. 입력값을 확인해주세요.')
       return false
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '회원가입 중 오류가 발생했습니다.'
-      ElMessage.error(errorMessage)
+      ElMessage.error('회원가입 중 오류가 발생했습니다.')
       return false
     } finally {
       loading.value = false

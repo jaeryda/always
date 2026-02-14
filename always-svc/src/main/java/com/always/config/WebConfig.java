@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:8088", "http://192.168.0.2:8088") // Vue 개발 서버
+                .allowedOrigins("http://localhost:8088", "http://192.168.0.2:8088")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -27,23 +27,27 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 로깅 인터셉터 (모든 요청)
         registry.addInterceptor(loggingInterceptor)
                 .addPathPatterns("/api/**");
-        
-        // JWT 인증 인터셉터 (인증이 필요한 요청)
+
         registry.addInterceptor(jwtAuthInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/auth/login", "/api/auth/register", "/api/auth/kakao/callback", "/api/auth/kakao/register", "/api/auth/kakao/login", "/api/auth/naver/callback", "/api/auth/naver/register", "/api/hello", "/api/menus/**", "/api/openai/**"); // 인증 불필요한 경로 제외
+                .excludePathPatterns(
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/kakao/callback",
+                        "/api/auth/kakao/register",
+                        "/api/auth/kakao/login",
+                        "/api/auth/naver/callback",
+                        "/api/auth/naver/register",
+                        "/api/hello",
+                        "/api/openai/**"
+                );
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 이미지 파일을 제공하기 위한 정적 리소스 핸들러
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:C:/Users/jy_kim/Pictures/server_picture/");
     }
 }
-
-
-

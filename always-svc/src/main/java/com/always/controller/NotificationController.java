@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,14 @@ public class NotificationController {
         if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false));
         List<AppNotification> notifications = appNotificationService.findByUserId(userId);
         return ResponseEntity.ok(Map.of("success", true, "notifications", notifications));
+    }
+
+    @GetMapping("/stream")
+    public ResponseEntity<?> stream(HttpServletRequest request) {
+        Long userId = requireUserId(request);
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false));
+        SseEmitter emitter = appNotificationService.subscribe(userId);
+        return ResponseEntity.ok(emitter);
     }
 
     @PostMapping
@@ -75,4 +84,3 @@ public class NotificationController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 }
-

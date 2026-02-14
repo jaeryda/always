@@ -5,6 +5,7 @@ export interface User {
   id: number
   username: string
   email: string
+  role?: 'USER' | 'ADMIN'
   createdAt?: string
 }
 
@@ -88,4 +89,3 @@ export const authApi = {
     return api.post('/auth/naver/register', data)
   }
 }
-

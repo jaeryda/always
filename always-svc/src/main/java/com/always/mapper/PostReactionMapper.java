@@ -12,5 +12,6 @@ public interface PostReactionMapper {
     boolean exists(@Param("postId") Long postId, @Param("userId") Long userId, @Param("type") String type);
     void insert(@Param("postId") Long postId, @Param("userId") Long userId, @Param("type") String type);
     int delete(@Param("postId") Long postId, @Param("userId") Long userId, @Param("type") String type);
-    List<Post> findBookmarkedPostsByUserId(@Param("userId") Long userId);
+    List<Post> findBookmarkedPostsByUserId(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+    int countBookmarkedPostsByUserId(@Param("userId") Long userId);
 }

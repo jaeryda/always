@@ -43,7 +43,7 @@ NProgress.configure({
 })
 
 const hasAuthState = (): boolean => localStorage.getItem('always_auth_state') === '1'
-const getRole = (): string => localStorage.getItem('always_user_role') || 'user'
+const getRole = (): string => localStorage.getItem('always_user_role') || 'USER'
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
@@ -59,7 +59,7 @@ router.beforeEach((to, from, next) => {
     return
   }
 
-  if (to.meta.requiresAdmin && getRole() !== 'admin') {
+  if (to.meta.requiresAdmin && getRole() !== 'ADMIN') {
     next('/')
     return
   }
