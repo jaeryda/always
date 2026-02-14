@@ -6,7 +6,7 @@
 
 ## 해결 방법 (모든 IP 허용)
 
-1. **MySQL 서버(192.168.75.80)에서 MySQL에 접속**
+1. **MySQL 서버(192.168.0.2)에서 MySQL에 접속**
    ```bash
    mysql -u root -p
    ```
@@ -55,7 +55,7 @@ SELECT user, host FROM mysql.user WHERE user = 'root';
 **또는 연결 URL에 직접 추가:**
 - 연결 설정 → **일반** 탭
 - URL 필드에 `?allowPublicKeyRetrieval=true` 추가
-- 예: `jdbc:mysql://192.168.75.80:3306/always_db?allowPublicKeyRetrieval=true`
+- 예: `jdbc:mysql://192.168.0.2:3306/always_db?allowPublicKeyRetrieval=true`
 
 ## 보안 참고 사항
 

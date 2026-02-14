@@ -31,7 +31,7 @@ public class KakaoApiService {
     @Value("${kakao.redirect.uri}")
     private String redirectUri;
 
-    @Value("${kakao.logout.redirect.uri:http://192.168.75.80:8088/login}")
+    @Value("${kakao.logout.redirect.uri:http://192.168.0.2:8088/login}")
     private String logoutRedirectUri;
 
     @Value("${kakao.client.secret:}")

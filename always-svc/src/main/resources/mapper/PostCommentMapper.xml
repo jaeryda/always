@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.always.mapper.PostCommentMapper">
+
+    <resultMap id="PostCommentMap" type="com.always.entity.PostComment">
+        <id property="id" column="id"/>
+        <result property="postId" column="post_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="authorUsername" column="author_username"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findByPostId" parameterType="Long" resultMap="PostCommentMap">
+        SELECT
+            c.id,
+            c.post_id,
+            c.user_id,
+            u.username AS author_username,
+            c.content,
+            c.created_at,
+            c.updated_at
+        FROM post_comments c
+        JOIN users u ON c.user_id = u.id
+        WHERE c.post_id = #{postId}
+        ORDER BY c.created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.always.entity.PostComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO post_comments (post_id, user_id, content, created_at, updated_at)
+        VALUES (#{postId}, #{userId}, #{content}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM post_comments
+        WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+</mapper>
+

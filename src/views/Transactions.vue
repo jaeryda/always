@@ -177,7 +177,6 @@ import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus'
 import { Plus, Refresh, Delete, ArrowLeft } from '@element-plus/icons-vue'
 import { accountBookApi, type Transaction, type Category } from '@/api/accountBook'
 import dayjs from 'dayjs'
-import { formatDate as formatDateUtil } from '@/utils/date'
 
 const route = useRoute()
 const router = useRouter()
@@ -294,7 +293,11 @@ const handleSubmit = async () => {
     try {
       if (editingTransaction.value) {
         // 수정
-        await accountBookApi.updateTransaction(editingTransaction.value.id!, form.value)
+        if (!editingTransaction.value?.id) {
+          ElMessage.error('수정할 거래 ID가 없습니다.')
+          return
+        }
+        await accountBookApi.updateTransaction(editingTransaction.value.id, form.value)
         ElMessage.success('거래 내역이 수정되었습니다.')
       } else {
         // 추가
@@ -341,7 +344,7 @@ const formatDate = (date: string): string => {
   return dayjs(date).format('YYYY년 MM월 DD일')
 }
 
-const getIcon = (iconName?: string) => {
+const getIcon = () => {
   return null
 }
 

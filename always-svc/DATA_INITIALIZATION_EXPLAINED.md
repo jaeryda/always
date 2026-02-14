@@ -87,7 +87,7 @@ SELECT * FROM posts;
 
 ### API로 확인
 ```
-GET http://192.168.75.80:8089/api/posts
+GET http://192.168.0.2:8089/api/posts
 ```
 
 ## 🛠️ 수정하거나 제거하려면?

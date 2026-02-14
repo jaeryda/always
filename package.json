@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "@google/genai": "^1.35.0",
     "@vueuse/core": "^14.1.0",
     "axios": "^1.13.2",
     "core-js": "^3.8.3",

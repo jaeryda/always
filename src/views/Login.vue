@@ -101,7 +101,6 @@ import { FormInstance, FormRules } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/store/auth'
 import { config } from '@/config'
-import { authApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()

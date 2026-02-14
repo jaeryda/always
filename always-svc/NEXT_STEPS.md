@@ -26,8 +26,8 @@ SELECT * FROM posts;
 
 서버가 실행 중일 때 다음 URL을 브라우저에서 테스트:
 
-- `http://192.168.75.80:8089/api/hello` - Hello 메시지
-- `http://192.168.75.80:8089/api/posts` - 모든 포스트 조회 (MySQL에서)
+- `http://192.168.0.2:8089/api/hello` - Hello 메시지
+- `http://192.168.0.2:8089/api/posts` - 모든 포스트 조회 (MySQL에서)
 
 ### 3. Vue 프론트엔드 연동 확인
 
@@ -36,7 +36,7 @@ Vue 프론트엔드를 실행하고:
 npm run serve
 ```
 
-브라우저에서 `http://192.168.75.80:8080` 접속 후:
+브라우저에서 `http://192.168.0.2:8080` 접속 후:
 - Home 페이지에서 "포스트 가져오기" 버튼 클릭
 - MySQL에서 가져온 데이터가 표시되는지 확인
 
@@ -54,17 +54,17 @@ npm run serve
 
 **GET - 모든 포스트 조회**
 ```
-GET http://192.168.75.80:8089/api/posts
+GET http://192.168.0.2:8089/api/posts
 ```
 
 **GET - 특정 포스트 조회**
 ```
-GET http://192.168.75.80:8089/api/posts/1
+GET http://192.168.0.2:8089/api/posts/1
 ```
 
 **POST - 포스트 생성**
 ```
-POST http://192.168.75.80:8089/api/posts
+POST http://192.168.0.2:8089/api/posts
 Content-Type: application/json
 
 {
@@ -75,7 +75,7 @@ Content-Type: application/json
 
 **PUT - 포스트 수정**
 ```
-PUT http://192.168.75.80:8089/api/posts/1
+PUT http://192.168.0.2:8089/api/posts/1
 Content-Type: application/json
 
 {
@@ -86,7 +86,7 @@ Content-Type: application/json
 
 **DELETE - 포스트 삭제**
 ```
-DELETE http://192.168.75.80:8089/api/posts/1
+DELETE http://192.168.0.2:8089/api/posts/1
 ```
 
 ### 2. DBeaver에서 데이터 확인

@@ -43,6 +43,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        ensureFeatureTables();
         // 초기 메뉴 데이터 생성 (메뉴가 없을 때만 전체 생성)
         if (menuMapper.count() == 0) {
             Menu menu1 = new Menu();
@@ -81,10 +82,40 @@ public class DataInitializer implements CommandLineRunner {
             menu4.setCreatedAt(LocalDateTime.now());
             menu4.setUpdatedAt(LocalDateTime.now());
 
+            Menu menu5 = new Menu();
+            menu5.setName("가계부");
+            menu5.setPath("/account-book");
+            menu5.setIcon("Wallet");
+            menu5.setDisplayOrder(5);
+            menu5.setVisible(true);
+            menu5.setCreatedAt(LocalDateTime.now());
+            menu5.setUpdatedAt(LocalDateTime.now());
+
+            Menu menu6 = new Menu();
+            menu6.setName("AI 이미지 생성");
+            menu6.setPath("/image-generator");
+            menu6.setIcon("Camera");  // Picture 대신 Camera 사용
+            menu6.setDisplayOrder(6);
+            menu6.setVisible(true);
+            menu6.setCreatedAt(LocalDateTime.now());
+            menu6.setUpdatedAt(LocalDateTime.now());
+
+            Menu menu7 = new Menu();
+            menu7.setName("AI 동영상 생성");
+            menu7.setPath("/video-generator");
+            menu7.setIcon("VideoCamera");
+            menu7.setDisplayOrder(7);
+            menu7.setVisible(true);
+            menu7.setCreatedAt(LocalDateTime.now());
+            menu7.setUpdatedAt(LocalDateTime.now());
+
             menuMapper.insert(menu1);
             menuMapper.insert(menu2);
             menuMapper.insert(menu3);
             menuMapper.insert(menu4);
+            menuMapper.insert(menu5);
+            menuMapper.insert(menu6);
+            menuMapper.insert(menu7);
 
             System.out.println("초기 메뉴 데이터가 생성되었습니다.");
         } else {
@@ -109,16 +140,66 @@ public class DataInitializer implements CommandLineRunner {
             boolean accountBookMenuExists = allMenus.stream()
                     .anyMatch(menu -> "/account-book".equals(menu.getPath()));
             if (!accountBookMenuExists) {
+                // 기존 메뉴의 최대 displayOrder를 찾아서 다음 순서로 설정
+                int maxOrder = allMenus.stream()
+                        .mapToInt(Menu::getDisplayOrder)
+                        .max()
+                        .orElse(0);
+                
                 Menu accountBookMenu = new Menu();
                 accountBookMenu.setName("가계부");
                 accountBookMenu.setPath("/account-book");
                 accountBookMenu.setIcon("Wallet");
-                accountBookMenu.setDisplayOrder(4);
+                accountBookMenu.setDisplayOrder(maxOrder + 1);
                 accountBookMenu.setVisible(true);
                 accountBookMenu.setCreatedAt(LocalDateTime.now());
                 accountBookMenu.setUpdatedAt(LocalDateTime.now());
                 menuMapper.insert(accountBookMenu);
                 System.out.println("가계부 메뉴가 추가되었습니다.");
+            }
+            
+            boolean imageGeneratorMenuExists = allMenus.stream()
+                    .anyMatch(menu -> "/image-generator".equals(menu.getPath()));
+            if (!imageGeneratorMenuExists) {
+                // 기존 메뉴의 최대 displayOrder를 찾아서 다음 순서로 설정
+                List<Menu> updatedMenus = menuMapper.findAllOrderByDisplayOrder();
+                int maxOrder = updatedMenus.stream()
+                        .mapToInt(Menu::getDisplayOrder)
+                        .max()
+                        .orElse(0);
+                
+                Menu imageGeneratorMenu = new Menu();
+                imageGeneratorMenu.setName("AI 이미지 생성");
+                imageGeneratorMenu.setPath("/image-generator");
+                imageGeneratorMenu.setIcon("Camera");  // Picture 대신 Camera 사용
+                imageGeneratorMenu.setDisplayOrder(maxOrder + 1);
+                imageGeneratorMenu.setVisible(true);
+                imageGeneratorMenu.setCreatedAt(LocalDateTime.now());
+                imageGeneratorMenu.setUpdatedAt(LocalDateTime.now());
+                menuMapper.insert(imageGeneratorMenu);
+                System.out.println("AI 이미지 생성 메뉴가 추가되었습니다.");
+            }
+            
+            boolean videoGeneratorMenuExists = allMenus.stream()
+                    .anyMatch(menu -> "/video-generator".equals(menu.getPath()));
+            if (!videoGeneratorMenuExists) {
+                // 기존 메뉴의 최대 displayOrder를 찾아서 다음 순서로 설정
+                List<Menu> updatedMenus2 = menuMapper.findAllOrderByDisplayOrder();
+                int maxOrder2 = updatedMenus2.stream()
+                        .mapToInt(Menu::getDisplayOrder)
+                        .max()
+                        .orElse(0);
+                
+                Menu videoGeneratorMenu = new Menu();
+                videoGeneratorMenu.setName("AI 동영상 생성");
+                videoGeneratorMenu.setPath("/video-generator");
+                videoGeneratorMenu.setIcon("VideoCamera");
+                videoGeneratorMenu.setDisplayOrder(maxOrder2 + 1);
+                videoGeneratorMenu.setVisible(true);
+                videoGeneratorMenu.setCreatedAt(LocalDateTime.now());
+                videoGeneratorMenu.setUpdatedAt(LocalDateTime.now());
+                menuMapper.insert(videoGeneratorMenu);
+                System.out.println("AI 동영상 생성 메뉴가 추가되었습니다.");
             }
         }
 
@@ -332,5 +413,66 @@ public class DataInitializer implements CommandLineRunner {
             System.err.println("기본 카테고리 초기화 중 오류: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void ensureFeatureTables() {
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS post_reactions (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                post_id BIGINT NOT NULL,
+                user_id BIGINT NOT NULL,
+                type VARCHAR(20) NOT NULL,
+                created_at TIMESTAMP NOT NULL,
+                UNIQUE (post_id, user_id, type)
+            )
+        """);
+
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS post_comments (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                post_id BIGINT NOT NULL,
+                user_id BIGINT NOT NULL,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP NOT NULL
+            )
+        """);
+
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS monthly_budgets (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                category_id BIGINT NOT NULL,
+                year INT NOT NULL,
+                month INT NOT NULL,
+                amount DECIMAL(15,2) NOT NULL,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP NOT NULL,
+                UNIQUE (user_id, category_id, year, month)
+            )
+        """);
+
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS app_notifications (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                message TEXT,
+                is_read BOOLEAN NOT NULL DEFAULT FALSE,
+                created_at TIMESTAMP NOT NULL
+            )
+        """);
+
+        jdbcTemplate.execute("""
+            CREATE TABLE IF NOT EXISTS ai_history (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                user_id BIGINT NOT NULL,
+                type VARCHAR(20) NOT NULL,
+                prompt TEXT,
+                result_text TEXT,
+                result_url TEXT,
+                created_at TIMESTAMP NOT NULL
+            )
+        """);
     }
 }

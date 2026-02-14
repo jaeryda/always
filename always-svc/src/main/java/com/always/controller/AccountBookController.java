@@ -1,8 +1,10 @@
 package com.always.controller;
 
 import com.always.entity.Category;
+import com.always.entity.MonthlyBudget;
 import com.always.entity.Transaction;
 import com.always.service.CategoryService;
+import com.always.service.MonthlyBudgetService;
 import com.always.service.TransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +20,18 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/account-book")
-@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.80:8088"})
+@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.0.2:8088"})
 public class AccountBookController {
 
     private final TransactionService transactionService;
     private final CategoryService categoryService;
+    private final MonthlyBudgetService monthlyBudgetService;
 
     @Autowired
-    public AccountBookController(TransactionService transactionService, CategoryService categoryService) {
+    public AccountBookController(TransactionService transactionService, CategoryService categoryService, MonthlyBudgetService monthlyBudgetService) {
         this.transactionService = transactionService;
         this.categoryService = categoryService;
+        this.monthlyBudgetService = monthlyBudgetService;
     }
 
     // ========== 카테고리 관련 API ==========
@@ -384,5 +388,83 @@ public class AccountBookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-}
 
+    @GetMapping("/budgets")
+    public ResponseEntity<Map<String, Object>> getBudgets(
+            @RequestParam Integer year,
+            @RequestParam Integer month,
+            HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "인증 정보가 없습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            List<MonthlyBudget> budgets = monthlyBudgetService.getBudgets(userId, year, month);
+            response.put("success", true);
+            response.put("budgets", budgets);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "예산 조회 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/budgets")
+    public ResponseEntity<Map<String, Object>> upsertBudget(
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "인증 정보가 없습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            Long categoryId = ((Number) body.get("categoryId")).longValue();
+            int year = ((Number) body.get("year")).intValue();
+            int month = ((Number) body.get("month")).intValue();
+            BigDecimal amount = new BigDecimal(String.valueOf(body.get("amount")));
+
+            MonthlyBudget budget = monthlyBudgetService.upsertBudget(userId, categoryId, year, month, amount);
+            response.put("success", true);
+            response.put("budget", budget);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "예산 저장 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @DeleteMapping("/budgets")
+    public ResponseEntity<Map<String, Object>> deleteBudget(
+            @RequestParam Long categoryId,
+            @RequestParam Integer year,
+            @RequestParam Integer month,
+            HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Long userId = (Long) request.getAttribute("userId");
+            if (userId == null) {
+                response.put("success", false);
+                response.put("message", "인증 정보가 없습니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            monthlyBudgetService.deleteBudget(userId, categoryId, year, month);
+            response.put("success", true);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "예산 삭제 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+}

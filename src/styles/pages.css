@@ -649,3 +649,309 @@
   font-size: 16px;
 }
 
+/* ImageGenerator 페이지 */
+.image-generator-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.image-generator-page-main {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.image-generator-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.image-generator-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.image-generator-card .card-header-icon {
+  font-size: 24px;
+}
+
+.generator-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1024px) {
+  .generator-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.image-generator-input-card,
+.image-generator-result-card {
+  height: 100%;
+}
+
+.image-generator-upload-section {
+  margin-bottom: 20px;
+}
+
+.image-generator-uploader {
+  width: 100%;
+}
+
+.image-generator-uploader :deep(.el-upload) {
+  width: 100%;
+}
+
+.image-generator-uploader :deep(.el-upload-dragger) {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-generator-uploaded-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.image-generator-upload-actions {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.image-generator-prompt-section {
+  margin-bottom: 20px;
+}
+
+.image-generator-advanced-options {
+  margin-bottom: 20px;
+}
+
+.image-generator-actions {
+  margin-top: 20px;
+}
+
+.image-generator-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.image-generator-loading-icon {
+  font-size: 48px;
+  color: #409eff;
+  margin-bottom: 20px;
+}
+
+.image-generator-loading-hint {
+  color: #909399;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.image-generator-result-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-generator-result-image {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.image-generator-result-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.image-generator-result-text {
+  width: 100%;
+  padding: 10px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.image-generator-empty-state {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* VideoGenerator 페이지 */
+.video-generator-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.video-generator-page-main {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.video-generator-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-generator-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.video-generator-card .card-header-icon {
+  font-size: 24px;
+}
+
+.video-generator-input-card,
+.video-generator-result-card {
+  height: 100%;
+}
+
+.video-generator-upload-section {
+  margin-bottom: 20px;
+}
+
+.video-generator-uploader {
+  width: 100%;
+}
+
+/* 드래그 앤 드롭 스타일 - picture-card 모드와 호환 */
+.video-generator-uploader .el-upload--picture-card {
+  width: 148px;
+  height: 148px;
+  line-height: 146px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-generator-uploader .el-upload--picture-card:hover {
+  border-color: #409eff;
+  background-color: #f5f7fa;
+}
+
+.video-generator-uploader .el-upload--picture-card .el-icon--upload {
+  font-size: 28px;
+  color: #8c939d;
+  margin-bottom: 8px;
+}
+
+.video-generator-uploader .el-upload--picture-card .el-upload__text {
+  color: #606266;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.video-generator-uploader .el-upload--picture-card .el-upload__text em {
+  color: #409eff;
+  font-style: normal;
+  display: block;
+  margin-top: 2px;
+}
+
+/* 업로드된 이미지 목록 스타일 */
+.video-generator-uploader .el-upload-list--picture-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.video-generator-uploader .el-upload-list--picture-card .el-upload-list__item {
+  width: 148px;
+  height: 148px;
+  border-radius: 6px;
+}
+
+.video-generator-prompt-section {
+  margin-bottom: 20px;
+}
+
+.video-generator-advanced-options {
+  margin-bottom: 20px;
+}
+
+.video-generator-actions {
+  margin-top: 20px;
+}
+
+.video-generator-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.video-generator-loading-icon {
+  font-size: 48px;
+  color: #409eff;
+  margin-bottom: 20px;
+}
+
+.video-generator-loading-hint {
+  color: #909399;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.video-generator-result-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.video-generator-result-video {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.video-generator-result-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.video-generator-empty-state {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

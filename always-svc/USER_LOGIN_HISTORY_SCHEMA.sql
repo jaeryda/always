@@ -19,3 +19,5 @@ CREATE TABLE users_H (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 로그인/로그아웃 히스토리 테이블';
 
 
+
+

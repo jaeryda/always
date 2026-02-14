@@ -96,7 +96,7 @@ Maven Wrapper(`mvnw`)를 사용하면 Maven을 별도로 설치하지 않아도 
 
 ## API 엔드포인트
 
-서버가 실행되면 기본적으로 `http://192.168.75.80:8089`에서 실행됩니다.
+서버가 실행되면 기본적으로 `http://192.168.0.2:8089`에서 실행됩니다.
 
 ### 예제 엔드포인트
 
@@ -113,7 +113,7 @@ Vue 프론트엔드에서 이 서버를 사용하려면 `src/api/index.js`의 `b
 
 ```javascript
 const api = axios.create({
-  baseURL: 'http://192.168.75.80:8089/api',
+  baseURL: 'http://192.168.0.2:8089/api',
   // ...
 })
 ```
@@ -121,14 +121,14 @@ const api = axios.create({
 또는 환경 변수로 설정:
 
 ```env
-VUE_APP_API_BASE_URL=http://192.168.75.80:8089/api
+VUE_APP_API_BASE_URL=http://192.168.0.2:8089/api
 ```
 
 ## 데이터베이스
 
 ### 개발 환경 (기본 - H2)
 현재 설정은 H2 인메모리 데이터베이스를 사용합니다.
-- H2 콘솔: `http://192.168.75.80:8089/h2-console`
+- H2 콘솔: `http://192.168.0.2:8089/h2-console`
 - 데이터는 서버 재시작 시 초기화됩니다
 
 ### 프로덕션 환경 (MySQL)

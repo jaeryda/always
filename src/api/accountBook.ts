@@ -53,6 +53,17 @@ export interface TransactionResponse {
   message?: string
 }
 
+export interface Budget {
+  id?: number
+  userId?: number
+  categoryId: number
+  year: number
+  month: number
+  amount: number
+  createdAt?: string
+  updatedAt?: string
+}
+
 export const accountBookApi = {
   // ========== 카테고리 관련 API ==========
   
@@ -119,6 +130,22 @@ export const accountBookApi = {
     if (year) params.year = year
     if (month) params.month = month
     return api.get<StatisticsResponse>('/account-book/statistics', { params })
+  },
+
+  getBudgets(year: number, month: number) {
+    return api.get<{ success: boolean; budgets: Budget[] }>('/account-book/budgets', {
+      params: { year, month }
+    })
+  },
+
+  upsertBudget(data: { categoryId: number; year: number; month: number; amount: number }) {
+    return api.post<{ success: boolean; budget: Budget }>('/account-book/budgets', data)
+  },
+
+  deleteBudget(categoryId: number, year: number, month: number) {
+    return api.delete<{ success: boolean }>('/account-book/budgets', {
+      params: { categoryId, year, month }
+    })
   }
 }
 

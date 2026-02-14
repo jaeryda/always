@@ -1,20 +1,31 @@
-import { defineStore } from 'pinia'
+﻿import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authApi, User } from '@/api/auth'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
+const ROLE_STORAGE_KEY = 'always_user_role'
+const AUTH_STORAGE_KEY = 'always_auth_state'
+
 export const useAuthStore = defineStore('auth', () => {
-  // state
   const user = ref<User | null>(null)
   const token = ref<string | null>(null)
   const loading = ref<boolean>(false)
 
-  // getters
   const isAuthenticated = computed(() => token.value !== null && user.value !== null)
   const username = computed(() => user.value?.username || '')
+  const isAdmin = computed(() => user.value?.username === 'admin')
 
-  // actions
+  const saveSession = (nextUser: User | null) => {
+    if (!nextUser) {
+      localStorage.removeItem(ROLE_STORAGE_KEY)
+      localStorage.removeItem(AUTH_STORAGE_KEY)
+      return
+    }
+    localStorage.setItem(ROLE_STORAGE_KEY, nextUser.username === 'admin' ? 'admin' : 'user')
+    localStorage.setItem(AUTH_STORAGE_KEY, '1')
+  }
+
   async function login(username: string, password: string): Promise<boolean> {
     loading.value = true
     try {
@@ -23,15 +34,14 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (data.success && data.user) {
         user.value = data.user
-        // 쿠키에 토큰이 저장되므로 별도 저장 불필요
-        // token은 restoreAuth에서 쿠키 기반으로 설정됨
-        token.value = 'cookie-based' // 쿠키 사용 표시
+        token.value = 'cookie-based'
+        saveSession(data.user)
         ElMessage.success(data.message || '로그인 성공')
         return true
-      } else {
-        ElMessage.error(data.message || '로그인 실패')
-        return false
       }
+
+      ElMessage.error(data.message || '로그인 실패')
+      return false
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || '로그인 중 오류가 발생했습니다.'
       ElMessage.error(errorMessage)
@@ -50,10 +60,10 @@ export const useAuthStore = defineStore('auth', () => {
       if (data.success) {
         ElMessage.success(data.message || '회원가입 성공')
         return true
-      } else {
-        ElMessage.error(data.message || '회원가입 실패')
-        return false
       }
+
+      ElMessage.error(data.message || '회원가입 실패')
+      return false
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || '회원가입 중 오류가 발생했습니다.'
       ElMessage.error(errorMessage)
@@ -65,16 +75,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout(): Promise<void> {
     try {
-      // 백엔드에 로그아웃 요청 (쿠키 삭제)
       const response = await authApi.logout()
       const data = response.data as any
-      
-      // 카카오 로그인 사용자인 경우 카카오 로그아웃 URL로 리다이렉트
+
       if (data.kakaoLogoutUrl && data.isKakaoUser) {
-        console.log('[AuthStore] 카카오 로그아웃 URL로 리다이렉트:', data.kakaoLogoutUrl)
         user.value = null
         token.value = null
-        // 카카오 로그아웃 페이지로 이동 (카카오 로그아웃 후 logoutRedirectUri로 리다이렉트됨)
+        saveSession(null)
         window.location.href = data.kakaoLogoutUrl
         return
       }
@@ -83,52 +90,42 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       user.value = null
       token.value = null
-      ElMessage.success('로그아웃되었습니다.')
+      saveSession(null)
+      ElMessage.success('로그아웃되었습니다')
       router.push('/login')
     }
   }
 
-  // 앱 시작 시 인증 상태 복원 (쿠키 기반)
   async function restoreAuth(forceCheck = false): Promise<void> {
-    // forceCheck가 false이고 쿠키가 없으면 API 호출하지 않음 (로그인하지 않은 상태)
-    // forceCheck가 true이면 (카카오 로그인 직후 등) 쿠키 확인을 우회하고 바로 API 호출
-    if (!forceCheck) {
-      // document.cookie가 존재하는지 확인하고 안전하게 체크
-      try {
-        if (!document.cookie || !document.cookie.includes('auth_token')) {
-          user.value = null
-          token.value = null
-          return
-        }
-      } catch (e) {
-        // document.cookie 접근 오류 시 안전하게 처리
-        user.value = null
-        token.value = null
-        return
-      }
+    const shouldTry = forceCheck || localStorage.getItem(AUTH_STORAGE_KEY) === '1'
+    if (!shouldTry) {
+      user.value = null
+      token.value = null
+      return
     }
 
-    // 쿠키에서 토큰이 자동으로 전송되므로 /api/auth/me로 사용자 정보 확인
     try {
       const response = await authApi.getCurrentUser()
       const data = response.data
       if (data.success && data.user) {
         user.value = data.user
-        token.value = 'cookie-based' // 쿠키 사용 표시
+        token.value = 'cookie-based'
+        saveSession(data.user)
       } else {
-        // 토큰이 유효하지 않음
         user.value = null
         token.value = null
+        saveSession(null)
       }
-    } catch (error: any) {
-      // 토큰이 유효하지 않거나 없음 (401은 정상 - 로그인하지 않은 상태)
+    } catch {
       user.value = null
       token.value = null
+      saveSession(null)
     }
   }
 
   function setUser(newUser: User | null): void {
     user.value = newUser
+    saveSession(newUser)
   }
 
   return {
@@ -137,6 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     isAuthenticated,
     username,
+    isAdmin,
     login,
     register,
     logout,
@@ -144,4 +142,3 @@ export const useAuthStore = defineStore('auth', () => {
     restoreAuth
   }
 })
-

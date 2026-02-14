@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.always.mapper.AIHistoryMapper">
+
+    <resultMap id="AIHistoryMap" type="com.always.entity.AIHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="type" column="type"/>
+        <result property="prompt" column="prompt"/>
+        <result property="resultText" column="result_text"/>
+        <result property="resultUrl" column="result_url"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findByUserId" resultMap="AIHistoryMap">
+        SELECT id, user_id, type, prompt, result_text, result_url, created_at
+        FROM ai_history
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.always.entity.AIHistory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_history (user_id, type, prompt, result_text, result_url, created_at)
+        VALUES (#{userId}, #{type}, #{prompt}, #{resultText}, #{resultUrl}, #{createdAt})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM ai_history
+        WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <delete id="deleteAllByUserId">
+        DELETE FROM ai_history
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>
+

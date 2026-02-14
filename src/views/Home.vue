@@ -139,7 +139,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Box, Document, InfoFilled, Connection, ArrowRight, User, Menu, CreditCard, ChatDotRound } from '@element-plus/icons-vue'
+import { Box, Document, Connection, ArrowRight, User, Menu, CreditCard, ChatDotRound } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { useMenuStore } from '@/store/menu'
 import { postsApi } from '@/api/posts'
@@ -176,4 +176,3 @@ onMounted(() => {
   fetchPostCount()
 })
 </script>
-

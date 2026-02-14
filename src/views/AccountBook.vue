@@ -1,155 +1,142 @@
-<template>
+﻿<template>
   <div class="page-container account-book-page">
     <el-container>
       <el-main class="page-main">
-        <!-- 월 선택 -->
         <div class="month-selector">
-          <el-button 
-            :icon="ArrowLeft" 
-            circle 
-            @click="changeMonth(-1)"
-            :disabled="loading" />
-          <div class="month-display">
-            <span class="month-text">{{ currentYear }}년 {{ currentMonth }}월</span>
-          </div>
-          <el-button 
-            :icon="ArrowRight" 
-            circle 
-            @click="changeMonth(1)"
-            :disabled="loading" />
+          <el-button :icon="ArrowLeft" circle @click="changeMonth(-1)" :disabled="loading" />
+          <div class="month-display"><span class="month-text">{{ currentYear }}년 {{ currentMonth }}월</span></div>
+          <el-button :icon="ArrowRight" circle @click="changeMonth(1)" :disabled="loading" />
         </div>
 
-        <!-- 통계 카드 -->
         <el-row :gutter="24" style="margin-top: 24px;">
-          <!-- 수입 카드 -->
-          <el-col :span="24" :md="8">
-            <el-card class="stat-card income-card" shadow="hover">
-              <div class="stat-content">
-                <div class="stat-header">
-                  <span class="stat-label">수입</span>
-                </div>
-                <div class="stat-value income-value">
-                  {{ formatCurrency(statistics.income) }}
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-
-          <!-- 지출 카드 -->
-          <el-col :span="24" :md="8">
-            <el-card class="stat-card expense-card" shadow="hover">
-              <div class="stat-content">
-                <div class="stat-header">
-                  <span class="stat-label">지출</span>
-                </div>
-                <div class="stat-value expense-value">
-                  {{ formatCurrency(statistics.expense) }}
-                </div>
-              </div>
-            </el-card>
-          </el-col>
-
-          <!-- 잔액 카드 -->
-          <el-col :span="24" :md="8">
-            <el-card 
-              class="stat-card balance-card" 
-              :class="{ 'negative-balance': statistics.balance < 0 }"
-              shadow="hover">
-              <div class="stat-content">
-                <div class="stat-header">
-                  <span class="stat-label">잔액</span>
-                </div>
-                <div class="stat-value balance-value">
-                  {{ formatCurrency(statistics.balance) }}
-                </div>
-              </div>
-            </el-card>
-          </el-col>
+          <el-col :span="24" :md="8"><el-card class="stat-card" shadow="hover"><div class="stat-value">수입 {{ formatCurrency(statistics.income) }}</div></el-card></el-col>
+          <el-col :span="24" :md="8"><el-card class="stat-card" shadow="hover"><div class="stat-value">지출 {{ formatCurrency(statistics.expense) }}</div></el-card></el-col>
+          <el-col :span="24" :md="8"><el-card class="stat-card" shadow="hover"><div class="stat-value">잔액 {{ formatCurrency(statistics.balance) }}</div></el-card></el-col>
         </el-row>
 
-        <!-- 최근 거래 내역 -->
         <el-card class="transactions-card" shadow="hover" style="margin-top: 24px;">
           <template #header>
             <div class="card-header">
-              <span>거래 내역</span>
-              <el-button type="primary" @click="$router.push('/transactions')">
-                전체보기
-              </el-button>
+              <span>카테고리별 예산</span>
+              <el-button type="primary" @click="budgetDialogVisible = true">예산 설정</el-button>
             </div>
           </template>
 
-          <div v-if="loading" class="loading-container">
-            <el-skeleton :rows="5" animated />
-          </div>
+          <el-empty v-if="budgetRows.length === 0" description="이번 달 지출 데이터가 없습니다." />
 
-          <div v-else-if="recentTransactions.length === 0" class="empty-container">
-            <el-empty description="거래 내역이 없습니다" />
-            <el-button type="primary" @click="$router.push('/transactions')">
-              거래 추가하기
-            </el-button>
-          </div>
+          <el-table v-else :data="budgetRows" stripe>
+            <el-table-column prop="categoryName" label="카테고리" min-width="160" />
+            <el-table-column label="예산" width="180">
+              <template #default="{ row }">{{ formatCurrency(row.budget) }}</template>
+            </el-table-column>
+            <el-table-column label="지출" width="180">
+              <template #default="{ row }">{{ formatCurrency(row.spent) }}</template>
+            </el-table-column>
+            <el-table-column label="진행률" min-width="220">
+              <template #default="{ row }">
+                <el-progress :percentage="row.percent" :status="row.percent > 100 ? 'exception' : 'success'" />
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
 
+        <el-card class="transactions-card" shadow="hover" style="margin-top: 24px;">
+          <template #header>
+            <div class="card-header">
+              <span>최근 거래 내역</span>
+              <el-button type="primary" @click="$router.push('/transactions')">전체보기</el-button>
+            </div>
+          </template>
+
+          <el-skeleton v-if="loading" :rows="5" animated />
+          <el-empty v-else-if="recentTransactions.length === 0" description="거래 내역이 없습니다" />
           <div v-else class="transaction-list">
-            <div 
-              v-for="transaction in recentTransactions" 
-              :key="transaction.id"
-              class="transaction-item"
-              @click="$router.push(`/transactions?edit=${transaction.id}`)">
-              <div class="transaction-left">
-                <div 
-                  class="category-icon" 
-                  :style="{ backgroundColor: transaction.category?.color || '#909399' }">
-                  <el-icon v-if="transaction.category?.icon">
-                    <component :is="getIcon(transaction.category.icon)" />
-                  </el-icon>
-                </div>
-                <div class="transaction-info">
-                  <div class="transaction-category">
-                    {{ transaction.category?.name || '미분류' }}
-                  </div>
-                  <div class="transaction-description">
-                    {{ transaction.description || '-' }}
-                  </div>
-                </div>
-              </div>
-              <div 
-                class="transaction-amount"
-                :class="transaction.type === 'INCOME' ? 'income' : 'expense'">
+            <div v-for="transaction in recentTransactions" :key="transaction.id" class="transaction-item" @click="$router.push(`/transactions?edit=${transaction.id}`)">
+              <div>{{ transaction.category?.name || '미분류' }} - {{ transaction.description || '-' }}</div>
+              <strong :style="{ color: transaction.type === 'INCOME' ? '#67c23a' : '#f56c6c' }">
                 {{ transaction.type === 'INCOME' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
-              </div>
+              </strong>
             </div>
           </div>
-
-          <!-- 홈으로 가기 버튼 -->
-          <div style="margin-top: 24px; text-align: center;">
-            <el-button type="primary" @click="$router.push('/')">
-              홈으로
-            </el-button>
-          </div>
         </el-card>
+
+        <el-dialog v-model="budgetDialogVisible" title="월 예산 설정" width="520px">
+          <el-form label-position="top">
+            <el-form-item label="카테고리">
+              <el-select v-model="budgetForm.categoryId" style="width:100%">
+                <el-option v-for="item in expenseCategories" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="예산 금액 (원)">
+              <el-input-number v-model="budgetForm.amount" :min="0" :step="10000" style="width:100%" />
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <el-button @click="budgetDialogVisible = false">취소</el-button>
+            <el-button type="primary" @click="saveBudget">저장</el-button>
+          </template>
+        </el-dialog>
       </el-main>
     </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
-import { accountBookApi, type Transaction, type StatisticsResponse } from '@/api/accountBook'
+import { accountBookApi, type Transaction, type StatisticsResponse, type Category } from '@/api/accountBook'
 import { ElMessage } from 'element-plus'
+import { useBudgetStore } from '@/store/budget'
+import { useNotificationStore } from '@/store/notifications'
 
 const currentYear = ref(new Date().getFullYear())
 const currentMonth = ref(new Date().getMonth() + 1)
 const loading = ref(false)
-const statistics = ref<StatisticsResponse>({
-  success: true,
-  year: currentYear.value,
-  month: currentMonth.value,
-  income: 0,
-  expense: 0,
-  balance: 0
-})
+const statistics = ref<StatisticsResponse>({ success: true, year: currentYear.value, month: currentMonth.value, income: 0, expense: 0, balance: 0 })
 const recentTransactions = ref<Transaction[]>([])
+const allTransactions = ref<Transaction[]>([])
+const categories = ref<Category[]>([])
+
+const budgetStore = useBudgetStore()
+const notificationStore = useNotificationStore()
+
+const budgetDialogVisible = ref(false)
+const budgetForm = ref<{ categoryId: number | null; amount: number }>({ categoryId: null, amount: 0 })
+
+const monthKey = computed(() => `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}`)
+const expenseCategories = computed(() => categories.value.filter((item) => item.type === 'EXPENSE'))
+
+const budgetRows = computed(() => {
+  const expenseMap = new Map<number, { categoryName: string; spent: number }>()
+  allTransactions.value
+    .filter((item) => item.type === 'EXPENSE')
+    .forEach((item) => {
+      const categoryId = item.categoryId || item.category?.id
+      if (!categoryId) return
+      const prev = expenseMap.get(categoryId)
+      const amount = Number(item.amount || 0)
+      if (prev) {
+        prev.spent += amount
+      } else {
+        expenseMap.set(categoryId, {
+          categoryName: item.category?.name || `카테고리 ${categoryId}`,
+          spent: amount
+        })
+      }
+    })
+
+  return Array.from(expenseMap.entries()).map(([categoryId, data]) => {
+    const budget = budgetStore.getBudget(currentYear.value, currentMonth.value, categoryId)
+    const percent = budget > 0 ? Math.round((data.spent / budget) * 100) : 0
+    return {
+      categoryId,
+      categoryName: data.categoryName,
+      spent: data.spent,
+      budget,
+      percent
+    }
+  })
+})
 
 const changeMonth = (delta: number) => {
   const date = new Date(currentYear.value, currentMonth.value - 1 + delta, 1)
@@ -159,64 +146,66 @@ const changeMonth = (delta: number) => {
 }
 
 const loadStatistics = async () => {
-  try {
-    const response = await accountBookApi.getStatistics(currentYear.value, currentMonth.value)
-    if (response.data.success) {
-      statistics.value = response.data
-    }
-  } catch (error: any) {
-    console.error('통계 조회 실패:', error)
-    ElMessage.error('통계 조회 중 오류가 발생했습니다.')
+  const response = await accountBookApi.getStatistics(currentYear.value, currentMonth.value)
+  if (response.data.success) statistics.value = response.data
+}
+
+const loadCategories = async () => {
+  const response = await accountBookApi.getAllCategories()
+  if (response.data.success && response.data.categories) {
+    categories.value = response.data.categories
   }
 }
 
 const loadRecentTransactions = async () => {
-  try {
-    const response = await accountBookApi.getAllTransactions(currentYear.value, currentMonth.value)
-    if (response.data.success && response.data.transactions) {
-      // 최근 10개만 표시
-      recentTransactions.value = response.data.transactions.slice(0, 10)
-    }
-  } catch (error: any) {
-    console.error('거래 내역 조회 실패:', error)
-    ElMessage.error('거래 내역 조회 중 오류가 발생했습니다.')
+  const response = await accountBookApi.getAllTransactions(currentYear.value, currentMonth.value)
+  if (response.data.success && response.data.transactions) {
+    allTransactions.value = response.data.transactions
+    recentTransactions.value = response.data.transactions.slice(0, 10)
+  } else {
+    allTransactions.value = []
+    recentTransactions.value = []
   }
 }
 
 const loadData = async () => {
   loading.value = true
   try {
-    await Promise.all([loadStatistics(), loadRecentTransactions()])
+    await Promise.all([loadStatistics(), loadRecentTransactions(), loadCategories()])
+    await budgetStore.load(currentYear.value, currentMonth.value)
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('가계부 데이터를 불러오지 못했습니다.')
   } finally {
     loading.value = false
   }
 }
 
+const saveBudget = async () => {
+  if (!budgetForm.value.categoryId) {
+    ElMessage.warning('카테고리를 선택해 주세요.')
+    return
+  }
+  await budgetStore.setBudget(
+    currentYear.value,
+    currentMonth.value,
+    budgetForm.value.categoryId,
+    Number(budgetForm.value.amount || 0)
+  )
+  await notificationStore.pushNotification('예산 설정', `${monthKey.value} 예산이 저장되었습니다.`)
+  budgetDialogVisible.value = false
+  ElMessage.success('예산을 저장했습니다.')
+}
+
 const formatCurrency = (amount: number | string): string => {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW'
-  }).format(num)
+  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(num)
 }
 
-const getIcon = (iconName?: string) => {
-  // 아이콘 이름을 컴포넌트로 변환 (간단한 예시)
-  // 실제로는 더 많은 아이콘 매핑이 필요할 수 있습니다
-  return null
-}
-
-onMounted(() => {
-  loadData()
-})
+onMounted(loadData)
 </script>
 
 <style scoped>
-.account-book-page {
-  background: linear-gradient(to bottom, #f5f7fa 0%, #ffffff 200px);
-  min-height: calc(100vh - 60px);
-}
-
 .month-selector {
   display: flex;
   align-items: center;
@@ -224,176 +213,29 @@ onMounted(() => {
   gap: 24px;
   padding: 24px 0;
 }
-
-.month-display {
-  min-width: 150px;
-  text-align: center;
-}
-
 .month-text {
   font-size: 24px;
   font-weight: 600;
-  color: #303133;
 }
-
 .stat-card {
-  border-radius: 16px;
-  border: none;
-  height: 140px;
+  height: 120px;
   display: flex;
   align-items: center;
 }
-
-.stat-content {
-  width: 100%;
-}
-
-.stat-header {
-  margin-bottom: 12px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #909399;
-  font-weight: 500;
-}
-
 .stat-value {
-  font-size: 32px;
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1.2;
 }
-
-.income-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.income-value {
-  color: white;
-}
-
-.expense-card {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-}
-
-.expense-value {
-  color: white;
-}
-
-.balance-card {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
-}
-
-.balance-card.negative-balance {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-}
-
-.balance-value {
-  color: white;
-}
-
-.transactions-card {
-  border-radius: 16px;
-  border: none;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 18px;
-  font-weight: 600;
 }
-
-.loading-container,
-.empty-container {
-  padding: 40px 0;
-  text-align: center;
-}
-
-.transaction-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .transaction-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.transaction-item:hover {
-  background-color: #f5f7fa;
-}
-
-.transaction-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-}
-
-.category-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-}
-
-.transaction-info {
-  flex: 1;
-}
-
-.transaction-category {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 4px;
-}
-
-.transaction-description {
-  font-size: 14px;
-  color: #909399;
-}
-
-.transaction-amount {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.transaction-amount.income {
-  color: #67c23a;
-}
-
-.transaction-amount.expense {
-  color: #f56c6c;
-}
-
-@media (max-width: 768px) {
-  .month-text {
-    font-size: 20px;
-  }
-
-  .stat-value {
-    font-size: 24px;
-  }
-
-  .stat-card {
-    height: 120px;
-    margin-bottom: 16px;
-  }
 }
 </style>
-

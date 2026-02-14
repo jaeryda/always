@@ -1,4 +1,4 @@
-const { defineConfig } = require('@vue/cli-service')
+﻿const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
   transpileDependencies: true,
   devServer: {
@@ -8,7 +8,6 @@ module.exports = defineConfig({
         errors: true,
         warnings: false,
         runtimeErrors: (error) => {
-          // ResizeObserver 관련 에러 무시
           const errorMessage = error?.message || error?.toString() || ''
           if (
             errorMessage.includes('ResizeObserver loop') ||

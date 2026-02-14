@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.75.80:8088"})
+@CrossOrigin(origins = {"http://localhost:8088", "http://192.168.0.2:8088"})
 public class AuthController {
 
     @Autowired
@@ -411,7 +411,7 @@ public class AuthController {
                 // 사용자가 없으면 가입 확인 페이지로 리다이렉트
                 System.out.println("[Kakao Callback] 신규 사용자 - 가입 확인 페이지로 리다이렉트");
                 try {
-                    String redirectUrl = "http://192.168.75.80:8088/social-register?email=" + 
+                    String redirectUrl = "http://192.168.0.2:8088/social-register?email=" + 
                                         java.net.URLEncoder.encode(email, "UTF-8") +
                                         "&nickname=" + java.net.URLEncoder.encode(nickname != null ? nickname : "", "UTF-8") +
                                         "&kakaoId=" + java.net.URLEncoder.encode(kakaoId, "UTF-8") +
@@ -457,9 +457,9 @@ public class AuthController {
             }
             
             // 6. 프론트엔드로 리다이렉트 (로그인 성공)
-            System.out.println("[Kakao Callback] 6. 프론트엔드로 리다이렉트 시작: http://192.168.75.80:8088/?kakaoLogin=success");
+            System.out.println("[Kakao Callback] 6. 프론트엔드로 리다이렉트 시작: http://192.168.0.2:8088/?kakaoLogin=success");
             try {
-                httpResponse.sendRedirect("http://192.168.75.80:8088/?kakaoLogin=success");
+                httpResponse.sendRedirect("http://192.168.0.2:8088/?kakaoLogin=success");
                 System.out.println("[Kakao Callback] 6. 리다이렉트 성공");
             } catch (java.io.IOException e) {
                 System.out.println("[Kakao Callback] 6. 리다이렉트 실패: " + e.getMessage());
@@ -581,9 +581,9 @@ public class AuthController {
                 }
 
                 // 6. 프론트엔드로 리다이렉트 (로그인 성공)
-                System.out.println("[Naver Callback] 6. 프론트엔드로 리다이렉트 시작: http://192.168.75.80:8088/?naverLogin=success");
+                System.out.println("[Naver Callback] 6. 프론트엔드로 리다이렉트 시작: http://192.168.0.2:8088/?naverLogin=success");
                 try {
-                    httpResponse.sendRedirect("http://192.168.75.80:8088/?naverLogin=success");
+                    httpResponse.sendRedirect("http://192.168.0.2:8088/?naverLogin=success");
                     System.out.println("[Naver Callback] 6. 리다이렉트 성공");
                 } catch (java.io.IOException e) {
                     System.out.println("[Naver Callback] 6. 리다이렉트 실패: " + e.getMessage());
@@ -605,7 +605,7 @@ public class AuthController {
                 String encodedEmail = URLEncoder.encode(email, StandardCharsets.UTF_8);
                 String encodedNickname = nickname != null ? URLEncoder.encode(nickname, StandardCharsets.UTF_8) : "";
                 String encodedNaverId = URLEncoder.encode(naverId, StandardCharsets.UTF_8);
-                String redirectUrl = String.format("http://192.168.75.80:8088/social-register?email=%s&nickname=%s&naverId=%s&provider=naver",
+                String redirectUrl = String.format("http://192.168.0.2:8088/social-register?email=%s&nickname=%s&naverId=%s&provider=naver",
                         encodedEmail, encodedNickname, encodedNaverId);
                 httpResponse.sendRedirect(redirectUrl);
                 System.out.println("[Naver Callback] 신규 사용자 리다이렉트 성공: " + redirectUrl);
